@@ -261,6 +261,32 @@
 	
 	\newpage
 	\section{Symmetric Encryption}
+	\configuratedText{Secret key cryptography involves the use of a single key. Given a message (the plaintext) and the key, encryption produces unintelligible data which is about the same length as the plaintext was.\\
+	Secret key cryptography is sometimes referred to as \textbf{conventional cryptography} or \textbf{symmetric cryptography}.\\
+	Secret key encryption schemes require that both the party that does the encryption and the party that does the decryption share a secret key. We will discuss two types of secret key encryption schemes:
+	\begin{itemize}
+	\item \textbf{Stream Ciphers}: This uses the key as a seed for a pseudorandom number generator, produces a stream of pseudorandom bits, and $\oplus$ s (bitwise exclusive ors) that stream with the data. Since $\oplus$ is its own inverse, the same computation performs both encryption and decryption.
+	\item \textbf{Block Ciphers}: This takes as input a secret key and a plaintext block of fixed size (older ciphers used 64-bit blocks, modern ciphers use 128-bit blocks). It produces a ciphertext block the same size as the plaintext block. To encrypt messages larger than the blocksize, the block cipher is used iteratively with algorithms called \textit{modes of operation}. A block cipher also has a decryption operation that does the reverse computation.
+	\end{itemize}}
+	
+	\subsection{Stream Ciphers}
+	\configuratedText{Idea: try to simulate one-time pad
+	\begin{enumerate}
+	\item Define a secret key (seed)
+	\item 	Using the seed, generate a byte stream (A.K.A. \textbf{Keystream}): i-th byte is a function of:
+	\begin{enumerate}
+	\item 	only the key (\textit{synchronous} stream cipher)
+	\item 	both the key and first i-1 bytes of cipher text (\textit{asynchronous} stream cipher)
+	\end{enumerate}
+	\item 	Obtain the ciphertext by bitwise XORing plaintext and keystream
+	\end{enumerate}}
+	
+	\subsection{Stream Ciphers in practice}
+	\subsubsection{A5/1}
+	\subsubsection{RC-4}
+	
+	\newpage
+	\subsection{Block Ciphers}
 	
 	\newpage
 	\section{Data Integrity}
