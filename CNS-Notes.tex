@@ -195,6 +195,7 @@
 \usepackage{float}
 \usepackage{titlesec}
 \usepackage{ragged2e}
+\usepackage{todonotes}
 
 % Use the new command to set the font sizes and titleformat settings
 \myheadingstyles
@@ -257,7 +258,7 @@
 	\myTOC
 
 	\newpage
-	\section{Introduction}
+	\section{Introduction and terminologies}
 	
 	\newpage
 	\section{Symmetric Encryption}
@@ -268,8 +269,25 @@
 	\item \textbf{Stream Ciphers}: This uses the key as a seed for a pseudorandom number generator, produces a stream of pseudorandom bits, and $\oplus$ s (bitwise exclusive ors) that stream with the data. Since $\oplus$ is its own inverse, the same computation performs both encryption and decryption.
 	\item \textbf{Block Ciphers}: This takes as input a secret key and a plaintext block of fixed size (older ciphers used 64-bit blocks, modern ciphers use 128-bit blocks). It produces a ciphertext block the same size as the plaintext block. To encrypt messages larger than the blocksize, the block cipher is used iteratively with algorithms called \textit{modes of operation}. A block cipher also has a decryption operation that does the reverse computation.
 	\end{itemize}
+	So, block ciphers encrypt data in blocks of set lengths, while stream ciphers do not and instead encrypt plaintext one byte at a time. The two encryption approaches, therefore, vary widely in implementation and use cases.\\
+	Here we will have some prerequisite concepts and then we will dive into these two encryption algorithms}
 
-	So, block ciphers encrypt data in blocks of set lengths, while stream ciphers do not and instead encrypt plaintext one byte at a time. The two encryption approaches, therefore, vary widely in implementation and use cases.}
+	\newpage
+	\subsection{Finite Fields}
+
+	\newpage
+	\subsection{Per-Round Keys}
+	
+	\newpage
+	\subsection{S-boxes and Bit Shuffles}
+
+	\newpage
+	\subsection{Feistel Cipher} \label{feistel-cipher}
+	\configuratedText{It is very important to make the encryption algorithm revered so that the decryption is possible. One method (used by AES) of having a cipher is to make all components reversible. With DES, the S-boxes are clearly not reversible since they map 6-bit inputs to 4-bit outputs. So instead, DES is designed to be reversible using a clever technique known as a Feistel cipher.\\
+	A Feistel cipher builds reversible transformations out of one-way transformations by only working on half the bits of the input value at a time. let us assume a 64-bit input block. \figref{feistel-cipher} shows both how encryption and decryption work. In a Feistel cipher there is some irreversible component that scrambles the input. We’ll call that component the mangler function.\\
+	In encryption for round n, the 64-bit input to round $n$ is divided into two 32-bit halves called $L_{n}$ and $R_{n}$. Round n generates as output 32-bit quantities $L_{n+1}$ and $R_{n+1}$. The concatenation of $L_{n+1}$ and $R_{n+1}$ is the 64-bit output of round n and, if there’s another round, the input to round n+1. $L_{n+1}$ is simply $R_{n}$. To compute $R_{n+1}$, do the following. $R_{n}$ and $K_{n}$ are input to the mangler
+	function, which takes as input 32 bits of data plus some bits of key to produce a 32-bit output. The 32-bit output of the mangler is XORed with $L_{n}$ to obtain $R_{n+1}$.}
+	\sectionCenteredfigure{\FeistelCipher}{Feistel Cipher}{feistel-cipher}
 	
 	\newpage
 	\subsection{Stream Ciphers}
@@ -315,13 +333,51 @@
 	\configuratedText{DES is a symmetric block cipher using 64 bit blocks and 56 bits key.\\
 	The choice of using 56 bits for keys in DES was a compromise between security and practicality. While a longer key would provide stronger security, the designers of DES also needed to consider the limitations of computing technology at the time. The inclusion of 8 parity bits reduced the effective key size to 56 bits, which some experts even then considered inadequate for robust security. However, the decision to use a 56-bit key was likely influenced by a balance between security requirements and the feasibility of implementing and processing longer keys with the available hardware during that era.}
 	\sectionCenteredfigure{\DESStructure}{Basic Structure of DE}{basic-structure-of-des}
-
+	
+	\subsubsection{DES Overview}
+	\configuratedText{First, the 64-bit input is subjected to an initial bit-shuffle. Then, 56-bit key is expanded into sixteen 48-bit per-round keys by taking a 48-bit subset of the 56-bit input key for each of the keys. Each round takes a 64-bit input with a 48-bit key and produces a 64-bit cipher block. After the sixteenth round, the output has its halves swapped and then is subjected to another bit-shuffle which happens to be the inverse of the initial bit-shuffle. This swapping after the final round does not add any cryptographic strength but has a side benefit. As noted in Feistel Ciphers, Swapping the output make the encryption and description identical except for the key schedule}
+	
+	\subsubsection{DES Complementary Notes}
+	\configuratedText{\textbf{The Mangler Function}\todo{Add DES Mangler Function}\\ 
+	\textbf{Undesirable Symmetries}\todo{Add DES Undesirable}\\ 
+	\textbf{DES Variants}\todo{Add DES Variantss}\\}
+	
 	\subsubsection{Advanced Encryption Standard (AES)}
-	\configuratedText{AES is a symmetric block cipher using 128 bit blocks and 128, 192 or 256 bits key with the resulting variants called AES-128, AES-192, and AES-256.}
+	\configuratedText{AES is a symmetric block cipher using 128 bit blocks and 128, 192 or 256 bits key with the resulting variants called AES-128, AES-192, and AES-256.\\
+	AES is similar to DES in that there is a key expansion algorithm which takes the key as an input and expands it into a bunch of round keys, and the algorithm executes a series of rounds that mangle a plaintext block into a ciphertext block. \figref{basic-structure-of-aes}. With DES each round it takes a 64-bit input with a 48-bit key and outputs 64-bit that (along with the next round key) is fed to the next round. With AES, each round takes a 128-bit input and a 128-bit key and produces a 128-bit output which is the input to the next round. Unlike DES, AES is not Feistel cipher. (The Feistel cipher structure is characterized by the division of the plaintext into two halves and the repeated application of a round function that involves both halves. Read more here: \ref{feistel-cipher})\\
+	In accordance to do as many rounds as needed to make the exhaustive search cheaper than any other form of cryptanalysis, AES does more round with bigger keys. AES-128 has 10 rounds, AES-196 has 12 rounds and AES-256 has 14 rounds. If AES
+	had a 64-bit version, it would have eight rounds, which would be comparable to the sixteen rounds in DES.\\
+	Another diffference between DES and AES is that DES operates on bits where AES operates on octets (bytes)\\
+	In AES, the key (128, 192, or 256 bits) is expanded into a series of 128-bit round keys, where there is one more round key than there are rounds. AES encryption or decryption consists of $\oplus$ing a round key into the intermediate value at the beginning of the process, at the end of the process, and between each pair of rounds.\\
+	In terms of Substitution and Permutation and cryptographic transformations, DES relies on predefined tables for S-boxes and P-boxes, which may appear arbitrary without understanding their rationale. In contrast, AES provides simpler mathematical formulas for substitutions and permutations, openly stating the reasons behind their design choices.}
+	
+	
 	\sectionCenteredfigure{\AESStructure}{Basic Structure of AE}{basic-structure-of-aes}
 	
-	\subsubsection{Twofish}
+	\subsubsection{AES Complementary Notes}
+	\configuratedText{\textbf{(AES’s S-box)}\todo{Add AES S-Box}\\ 
+	\textbf{Key expansion}\todo{Add AES Key expansion}\\ }
+
+	\subsection{Block Ciphers Modes of Operations}
+	\configuratedText{Block ciphers operate on fixed-length blocks, typically 64 or 128 bits. The reason for using fixed-length blocks is twofold: first, messages can have varying lengths, and second, encrypting the same plaintext with the same key should always produce the same output.\\
+	To address the need for encrypting messages of \textbf{arbitrary} lengths, several modes of operation have been invented. These modes allow block ciphers to provide confidentiality for messages of any length. These modes define how the block cipher is applied to multiple blocks and how they are combined to encrypt or decrypt the entire message.}
+
+	\subsubsection{Electronic Cook Book (ECB)}
+	\configuratedText{a full 128 bits), and encrypt each block
+	with the secret key \figref{electronic-code-book-encryption}. The other side receives the encrypted blocks and decrypts each block in turn to recover the original message \figref{electronic-code-book-decryption}.}
+
+	\sectionCenteredfigure{\ECBEncryption}{Electronic Code Book Encryption}{electronic-code-book-encryption}
 	
+	\sectionCenteredfigure{\ECBDecryption}{Electronic Code Book Decryption}{electronic-code-book-decryption}
+	
+	\configuratedText{ECB has two serious flaws. Patterns in the ciphertext, such as repeated blocks, leak information, and nothing prevents someone from rearranging, deleting, modifying, or duplicating blocks.}
+	
+	\subsubsection{Cipher Block Chaining (CBC)}
+	\subsubsection{Cipher Stealing}
+	\subsubsection{Cipher Feedback (CFB)}
+	\subsubsection{Output Feedback (OFB)}
+	\subsubsection{Counter Mode (CTR)}
+		
 	\newpage
 	\section{Data Integrity}
 	
