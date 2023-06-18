@@ -274,12 +274,15 @@
 
 	\newpage
 	\subsection{Finite Fields}
-
-	\newpage
-	\subsection{Per-Round Keys}
+	\todo{Finite Fields}
 	
 	\newpage
+	\subsection{Per-Round Keys}
+	\todo{Per-Round Keys}
+		
+	\newpage
 	\subsection{S-boxes and Bit Shuffles}
+	\todo{Write S-boxes and Bit Shuffles}
 
 	\newpage
 	\subsection{Feistel Cipher} \label{feistel-cipher}
@@ -288,6 +291,40 @@
 	In encryption for round n, the 64-bit input to round $n$ is divided into two 32-bit halves called $L_{n}$ and $R_{n}$. Round n generates as output 32-bit quantities $L_{n+1}$ and $R_{n+1}$. The concatenation of $L_{n+1}$ and $R_{n+1}$ is the 64-bit output of round n and, if there’s another round, the input to round n+1. $L_{n+1}$ is simply $R_{n}$. To compute $R_{n+1}$, do the following. $R_{n}$ and $K_{n}$ are input to the mangler
 	function, which takes as input 32 bits of data plus some bits of key to produce a 32-bit output. The 32-bit output of the mangler is XORed with $L_{n}$ to obtain $R_{n+1}$.}
 	\sectionCenteredfigure{\FeistelCipher}{Feistel Cipher}{feistel-cipher}
+	
+	\newpage
+	\subsection{Padding and Ciphertext Stealing}
+	\configuratedText{Padding and ciphertext stealing are techniques used in cryptography to handle messages or plaintext that are not an exact multiple of the block size in block cipher algorithms. Both techniques serve the purpose of ensuring proper encryption and decryption while maintaining the integrity and length of the ciphertext.\\
+	
+	\textbf{Padding}:\\
+	Padding is the process of adding extra bits or bytes to the plaintext before encryption to ensure it aligns with the block size required by the encryption algorithm. The most commonly used padding scheme is called PKCS\#7 (Public Key Cryptography Standard \#7).
+	
+	In PKCS\#7 padding, if the plaintext is shorter than the block size, padding bytes are added to the end of the plaintext. The value of each padding byte is set to the number of padding bytes added. For example, if two bytes are needed to reach the block size, both padding bytes will have a value of 0x02.
+	
+	During decryption, the receiver knows the number of padding bytes based on the value of the last byte in the decrypted block. The padding bytes are then removed to obtain the original plaintext.
+	
+	Padding is effective when the plaintext length is an exact multiple of the block size, but it introduces additional bytes to the ciphertext, which might impact certain protocols or applications where maintaining the exact plaintext length is crucial.\\
+	
+	\textbf{Ciphertext Stealing}:\\
+	Ciphertext stealing is an alternative approach to handle the last partial block of plaintext without explicitly padding it. It is commonly used when the plaintext length is not a perfect multiple of the block size.
+	
+	In ciphertext stealing, the last block of plaintext is divided into two parts: a truncated part and a stolen part.
+	
+	The truncated part consists of the initial bytes of the last block that can fill up a complete block size. This truncated part is encrypted like any other block and becomes the second-to-last block of ciphertext.
+	
+	The stolen part consists of the remaining bytes in the last block. It is then combined with the second-to-last block of ciphertext to create the final block of ciphertext.
+	
+	During decryption, the last block of ciphertext is decrypted as usual. The stolen part is separated from the decrypted last block, and it is combined with the second-to-last block of plaintext to recover the original message.
+	
+	Ciphertext stealing allows for encryption and decryption of messages of varying lengths without explicitly padding the last block. It ensures that the ciphertext remains the same length as the original plaintext, which can be desirable in certain scenarios.
+	
+	Figure \figref{cbc-cs1-encrypt} below illustrates the CBC-CS1-Encrypt algorithm for the case that $ P_{n}^{*} $ is a partial block, i.e., d $ \le $ b. The bolded rectangles contain the inputs and outputs.
+	The dotted rectangles provide alternate representations of two blocks in order to illustrate the role of the “stolen” ciphertext.
+	In particular, the string of the b-d rightmost bits of $ C_{n-1} $ , denoted $ P_{n-1}^{**} $, becomes the padding for the input block to the final invocation of the block cipher within the execution of CBC mode. The ciphertext that is returned in Step 5 above omits $ C_{n-1}^{**} $, because it can be recovered from $ C_{n} $ during decryption.
+	
+	\sectionCenteredfigure[0.65]{\CBCCSEncrypt}{CBC CS1 Encrypt}{cbc-cs1-encrypt}
+
+	}
 	
 	\newpage
 	\subsection{Stream Ciphers}
@@ -372,14 +409,132 @@
 	
 	\configuratedText{ECB has two serious flaws. Patterns in the ciphertext, such as repeated blocks, leak information, and nothing prevents someone from rearranging, deleting, modifying, or duplicating blocks.}
 	
+	\sectionCenteredfigure[0.7]{\ECBDiffusion}{ECB Lack of Diffusion}{ecb-lack-of-diffusion}
+	
 	\subsubsection{Cipher Block Chaining (CBC)}
-	\subsubsection{Cipher Stealing}
+	\configuratedText{CBC generates its own “random numbers” for all but the first block. It uses $ c_{i} $ as $ r_{i+1} $. In other words, it takes the previous block of ciphertext and uses that as the “random
+	number” that will be $\oplus$’d into the next plaintext block. To avoid leaking the information that two messages encrypted with the same key have the same first plaintext blocks, CBC selects one random number that gets $\oplus$’d into the first block of plaintext and transmits it along with the data.\\
+	This initial random number is known as an \textbf{IV (initialization vector)}
+	A randomly chosen IV guarantees that even if the same message is sent repeatedly, the ciphertext will be completely different each time.}
+	\sectionCenteredfigure{\CBCEncrption}{Cipher Block Chaining Encryption}{cipher-block-chaining-encryption}
+	\configuratedText{\textbf{Properties of CBC:}
+	\begin{itemize}
+	\item What would happen if they changed a block of the ciphertext, say, the value of ciphertext block $ c_{n} $? Changing $ c_{n} $ has a predictable effect on $ m_{n+1} $ because $ c_{n} $ gets $\oplus$’d with the decrypted $ c_{n+1} $ to yield $ m_{n+1} $ For instance, changing bit 3 of $ c_{n} $ changes bit 3 of $ m_{n+1} $. Modifying $ c_{n} $ also garbles block $ m_{n} $ to some unpredictable
+	value.
+	\item Asynchronous stream cipher
+	\item Conceals plaintext patterns
+	\item Plaintext cannot be easily manipulated
+	\item No parallel implementation known for encryption
+	\item message must be padded to a multiple of the cipher block size (or we may use Ciphertext Stealing)
+	\item a plaintext can be recovered from just two adjacent blocks of ciphertext\\ as a consequence, decryption can be parallelized. usually a message is encrypted once, but decrypted many times
+	\end{itemize}
+	
+	}
+
+	\subsubsection{XEX (XOR Encrypt XOR)}
+	\todo{Write down XEX}
+	
+	\subsubsection{XTS (XEX with Ciphertext Stealing)}
+	\configuratedText{XTS is a clever variant of XEX that encrypts multiblock messages that need not be a multiple of the cryptographic blocksize while still keeping the ciphertext the same
+	size as the plaintext. XTS accomplishes this goal (of being length-preserving despite a message not being a multiple of the cryptographic blocksize) through a very clever but somewhat complicated trick known as ciphertext stealing.\\ Ciphertext stealing pads the final block $ m_{n} $ with as many of the bits of the previous block of
+	ciphertext ($ c_{n-1} $) as necessary to make block $ m_{n} $ be full sized (in our example, $ 128 - 93 = 35 $ bits need to be stolen from $ c_{n-1} $). The padded block $ m_{n} $ is then encrypted. But the ciphertext is now longer than the plaintext, since the last block of ciphertext is now a full-sized block. To solve that problem, we swap ciphertext blocks $ c_{n} $ and $ c_{n-1} $ and truncate the final
+	ciphertext block (which was the encryption of block $ m_{n-1} $) to be the size of the original block $ m_{n} $. In our example, where the original block mn was 93 bits long, the final ciphertext block will be 93 bits.
+	Now the ciphertext is the same size as the message, but how do we decrypt either of the last two blocks? To obtain block $ m_{n} $, decrypt $ c_{n-1} $ (using implicit IVs and Bmods associated with block $ m_{n} $).
+	The result will be plaintext $ m_{n} $ with appended padding, but you need to know how much of the result is message and how much is padding. The size of plaintext block $ m_{n} $ will be the size of the final ciphertext block (in our example, 93 bits). The padding (the remaining 128-93=35 bits) is stolen ciphertext from $ c_{n-1} $.}
+	\sectionCenteredfigure{\XTSEnryption}{XTS Mode Decryption}{xts-mode-decryption}
+	\sectionCenteredfigure{\XTSDecryption}{XTS Mode Decryption}{xts-mode-decryption}	
+	
 	\subsubsection{Cipher Feedback (CFB)}
+	\configuratedText{CFB (short for cipher feedback) is an AES block cipher mode like CBC, makes a block cipher into an asynchronous stream cipher (i.e., supports some re-synchronizing after error, if input to encryptor is given through a shift-register) in the sense that for the encryption of a block, $ B_{i} $, the cipher of the previous block, $ C_{i-1} $ is required. CFB also makes use of an initialization vector like CBC. The main difference is that in CFB, the ciphertext block of the previous block is encrypted first and then XOR-ed with the block in focus.}
+	\sectionCenteredfigure[0.7]{\CFBCSEncrypt}{Cipher Feedback (CFB)}{cipher-feedback-cfb}
+
 	\subsubsection{Output Feedback (OFB)}
+	\configuratedText{The output feedback (OFB) mode makes a block cipher into a synchronous stream cipher. It generates keystream blocks, which are then XORed with the plaintext blocks to get the ciphertext. Just as with other stream ciphers, flipping a bit in the ciphertext produces a flipped bit in the plaintext at the same location. This property allows many error-correcting codes to function normally even when applied before encryption.\\
+	\textbf{Properties of OFB:}
+	\begin{itemize}
+	\item 	 Synchronous stream cipher
+	\item 	 Errors in ciphertext do not propagate
+	\item 	 Pre-processing is possible
+	\item 	 Conceals plaintext patterns
+	\item 	 No parallel implementation known
+	\item 	 Active attacks by manipulating plaintext are possible
+	\end{itemize}
+	}
+	\sectionCenteredfigure{\OFBCSEncrypt}{Feedback (OFB)}{output-feedback-ofb}
+
 	\subsubsection{Counter Mode (CTR)}
+	\configuratedText{also known as Integer Counter Mode (ICM) and
+	Segmented Integer Counter (SIC) mode 
+	\begin{itemize}
+	\item 	turns a block cipher into a stream cipher: it generates the next keystream block by encrypting successive values of a "counter" 
+	\item 	counter can be any function which produces a sequence which is guaranteed not to repeat for a long time, although an actual counter is the simplest and most popular.
+	\item 	the usage of a simple deterministic input function raised controversial discussions 
+	\item 	has similar characteristics to OFB, but also allows a random access property during decryption
+	\item 	well suited to operation on a multi-processor machine where blocks can be encrypted in parallel
+	\end{itemize}}
+	\sectionCenteredfigure{\CTREncrption}{Counter Mode (CTR)}{counter-mode-ctr}
 		
 	\newpage
 	\section{Data Integrity}
+	\configuratedText{A secret key system can be used to generate a cryptographic integrity check known as a MAC (Message Authentication Code). MACs are used to protect the data from modification in transit.\\ In this chapter, we’ll focus on MACs based on secret key encryption functions and MACs based on hash functions.}
+	
+	\subsection{Definition}
+	\configuratedText{
+	\begin{itemize}
+	\item \textit{Authentication  Algorithm} (A): $A$ is the algorithm used to generate an authentication tag for a given message using a secret authentication key (k). It takes the message (m) as input and produces the authentication tag $ A_{k}(m) $.
+	\item \textit{Verification Algorithm} (V): $V$ is the algorithm used to verify the authenticity and integrity of a message. It takes the received message $(m)$ and its corresponding authentication tag $(A_k(m))$ as input and outputs either \textit{accept} or \textit{reject} based on whether the authentication tag is valid or not.
+	\item \textit{Authentication Key} ($k$): The authentication key $(k)$ is a secret key shared between Alice and Bob. It is used by the authentication algorithm $(A)$ to generate the authentication tag and by the verification algorithm $(V)$ to validate the tag.
+	\item \textit{Message Space (usually binary strings)}: The message space refers to the set of possible messages that can be authenticated using CBC-MAC. Typically, these messages are represented as binary strings.
+	\item \textit{Message Format}: Every message exchanged between Alice and Bob is a pair $(m, A_k(m))$, where $m$ is the actual message and $A_k(m)$ is its corresponding authentication tag generated by applying the authentication algorithm $(A)$ with the authentication key $(k)$.
+	\end{itemize}
+	}
+	        
+	\subsection{MAC based on CBC Mode Encryption}
+	\configuratedText{CBC-MAC computes a MAC of a message using key K. It encrypts the message in CBC mode, using key K, and uses the last block (called the \textbf{residue}, see \figref{cipher-block-chaining-residue}) as the MAC for the message. If an attacker modifies any portion of a message, the residue will no longer be the correct value (except with probability 1 in $ 2^{128} $, assuming 128-bit blocks).}
+	\sectionCenteredfigure{\CBCMACResidue}{Cipher Block Chaining Residue}{cipher-block-chaining-residue}
+
+	
+	\subsection{Vulnerabilities of CBC-MAC}
+	\subsubsection{Initialization Vector or IV}	
+	\configuratedText{When we are working on CBC-MAC or Cipher Block Chaining Message Authentication Code, we generally use the Initialization Vector or IV as zero.\\
+	When we use the IV or Initialization Vector as zero, a problem arises. Let's say there are two known messages named 'msg1' and 'msg2'. These two messages will generate two signatures called 'sig1' and 'sig2' independently. Finally,
+	
+	\begin{itemize}
+	\item 	    E (msg1 XOR 0) = sig1    
+	\item 	    E (msg2 XOR 0) = sig2
+	\end{itemize}
+	    
+	Now, a message which consists of msg1 and msg2 will generate two signatures. Let's name the concatenated message as msg3 and the signals generated as sig31 and sig32. 
+	
+	\begin{itemize}
+	\item 	    E (msg1 XOR 0) = sig31 = sig1
+	\item 	    E (msg2 XOR sig1) = sig32
+	\end{itemize}
+	     
+	We can calculate this without even knowing the key of the encryption. }
+	
+	\subsubsection{Fixed and Variable-length message}
+	\configuratedText{If the block cipher used is secure (meaning that it is a pseudorandom permutation), then CBC-MAC is secure for fixed-length messages. However, by itself, it is not secure for variable-length messages. Thus, any single key must only be used for messages of a fixed and known length. This is because an attacker who knows the correct authentication tag (i.e. CBC-MAC) pairs for two messages (m,t) and (m',t') can generate a third message m" whose CBC-MAC will also be t'. This is simply done by XORing the first block of m' with t and then concatenating m with this modified m'; i.e., by making $ m" = m \parallel (m_{1}' \oplus t) \parallel m_{2}' \parallel \dots \parallel m_{x}'$\\
+	There are three main ways of modifying CBC-MAC so that it is secure for variable length messages: 
+	\begin{enumerate}
+		\item 	Input-length key separation
+		\item 	Length-prepending
+		\item 	Encrypt last block.
+		\item 	Use HMACs or CMACs.
+	\end{enumerate}}
+	
+	\subsection{MAC based on cryptographic hash}
+	\configuratedText{A hash function inputs an arbitrary-sized bitstring and outputs a fixed-size bitstring, ideally so that
+	all output values are equally likely. A cryptographic hash (also known as a message digest) has some extra security properties:
+	
+	\textbf{Preimage Resistance}: It should be computationally infeasible to find a message that has a given pre-specified hash.
+	
+	\textbf{Collision Resistance}: It should be computationally infeasible to find two messages that have the same hash.
+	
+	\textbf{Second Preimage Resistance}: It should be computationally infeasible to find a second message that has the same hash as a given message.}
+	
+	\subsection{The Birthday Paradox}
+	\configuratedText{If there are 23 or more people in a room, the odds are better than 50\% that two of them will have the same birthday. Analyzing this parlor trick can give us some insight into cryptography.\\ Let's do this in a slightly more general way. Let's assume $n$ inputs (which would be humans in the birthday example), $k$ possible outputs, and an unpredictable mapping from input to output. With $n$ inputs, there are $\frac{n(n-1)}{2}$ pairs of inputs. For each pair, there's a probability of $\frac{1}{k}$ of both inputs producing the same output value. Therefore, you'll need about $\frac{k}{2}$ pairs in order for the probability to be about $\frac{1}{2}$ that you'll find a matching pair. That means that if $n$ is greater than $\frac{k}{2}$, there's a good chance of finding a matching pair.}
 	
 	\newpage
 	\section{Public Key Cryptography}
