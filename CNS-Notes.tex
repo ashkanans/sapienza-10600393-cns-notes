@@ -531,23 +531,118 @@
 	
 	\textbf{Collision Resistance}: It should be computationally infeasible to find two messages that have the same hash.
 	
-	\textbf{Second Preimage Resistance}: It should be computationally infeasible to find a second message that has the same hash as a given message.}
+	\textbf{Second Preimage Resistance}: It should be computationally infeasible to find a second message that has the same hash as a given message.\\}
 	
+	\configuratedText{Strong collision resistance: A hash function is said to have strong collision resistance if it is computationally infeasible to find \textbf{any two distinct inputs} that produce the same hash output. In other words, given a hash value h, it is difficult to find any two different messages m1 and m2 such that hash(m1) = hash(m2).
+		
+	Weak collision resistance (also known as second preimage resistance): A hash function is said to have weak collision resistance if it is computationally infeasible \textbf{to find a second input message that produces the same hash output as a given fixed input message.} In simpler terms, it is difficult to find a different message m2 such that hash(m1) = hash(m2) for a known message m1.\\
+		
+	The strong collision resistance property implies the weak collision resistance property (strong $\rightarrow$ weak). For the proof we show $not$ Weak $\rightarrow$ $not$ Strong If a hash function is strongly collision resistant, it automatically implies that it is weakly collision resistant. If it were possible to find a second preimage for a fixed input message, it would effectively mean finding a collision between the fixed input message and the second preimage, contradicting the strong collision resistance assumption. Therefore, a hash function that exhibits strong collision resistance will inherently exhibit weak collision resistance as well.
+		
+	As an example, the mod s function (\% s), where s is a large random prime number, is not suitable for cryptographic purposes due to the following reasons:
+		
+	a) Predictability: The mod s function is deterministic and has a predictable output. Given an input x, the output of x \% s will always be the remainder when x is divided by s. This predictability makes it vulnerable to attacks, as an attacker can calculate the output for various inputs and try to identify patterns or predict future outputs.
+		
+	b) Lack of diffusion: Cryptographic hash functions need to exhibit the property of diffusion, which means that a small change in the input should result in a significantly different output. However, the mod s function does not provide diffusion. If two inputs x1 and x2 are very close to each other (e.g., x2 = x1 + 1), their outputs x1 \% s and x2 \% s will also be very close to each other, thus lacking the necessary diffusion property.
+		
+	Limited output space: The output of the mod s function is constrained to the range from 0 to s-1, where s is the prime number. This limited output space makes it vulnerable to brute-force attacks, where an attacker can exhaustively try different inputs until finding a collision or a preimage.
+		
+	Lack of resistance to mathematical attacks: The mod s function is vulnerable to various mathematical attacks, such as modular arithmetic properties or number-theoretic attacks. These attacks exploit the specific properties of modular arithmetic and the structure of prime numbers, making the function unsuitable for cryptographic purposes.}
+
 	\subsection{The Birthday Paradox}
 	\configuratedText{If there are 23 or more people in a room, the odds are better than 50\% that two of them will have the same birthday. Analyzing this parlor trick can give us some insight into cryptography.\\ Let's do this in a slightly more general way. Let's assume $n$ inputs (which would be humans in the birthday example), $k$ possible outputs, and an unpredictable mapping from input to output. With $n$ inputs, there are $\frac{n(n-1)}{2}$ pairs of inputs. For each pair, there's a probability of $\frac{1}{k}$ of both inputs producing the same output value. Therefore, you'll need about $\frac{k}{2}$ pairs in order for the probability to be about $\frac{1}{2}$ that you'll find a matching pair. That means that if $n$ is greater than $\frac{k}{2}$, there's a good chance of finding a matching pair.}
 	
+	\subsection{MACs based on Hash Functions}
+	
+	\subsection{SHA-1}
+	
+	\newpage
+	\subsection{Authenticated Encryption (AE)}
+	\configuratedText{Authenticated Encryption (AE) is an encryption scheme which simultaneously assures the data confidentiality (also known as privacy: encrypted message is impossible to understand without the knowledge of a secret key) and authenticity (in other words, it is unforgeable: the encrypted message includes an authentication tag that the sender can calculate only if she possesses the secret key)
+		
+	Many (but not all) AE schemes allow the message to contain "associated data" (AD) which is not made confidential, but its integrity is protected (i.e., it is readable, but tampering with it will be detected). A typical example is the header of a network packet that contains its destination address. To properly route the packet, all intermediate nodes in the message path need to know the destination, but for security reasons they cannot possess the secret key. Schemes that allow associated data provide authenticated encryption with associated data, or AEAD.}
+
+	\subsubsection{Encrypt-then-MAC (E$t$M)}
+	\configuratedText{The plaintext is first encrypted, then a MAC is produced based on the resulting ciphertext. The ciphertext and its MAC are sent together. Used in, e.g., IPsec. This is the only method which can reach the highest definition of security in AE, but this can only be achieved when the MAC used is "strongly unforgeable". Note that key separation is mandatory (distinct keys must be used for encryption and for the keyed hash), otherwise it is potentially insecure depending on the specific encryption method and hash function used.}
+	
+	\sectionCenteredfigure[0.6]{\AEEtM}{Authenticated Encryption EtM}{ae-etm}
+	
+	\subsubsection{Encrypt-and-MAC (E$\&$M)}
+	\configuratedText{A MAC is produced based on the plaintext, and the plaintext is encrypted without the MAC. The plaintext's MAC and the ciphertext are sent together. Used in, e.g., SSH. Even though the E\&M approach has not been proved to be strongly unforgeable in itself, it is possible to apply some minor modifications to SSH to make it strongly unforgeable despite the approach.}
+	
+	\sectionCenteredfigure[0.6]{\AEEaM}{Authenticated Encryption EaM}{ae-eam}
+	
+	\subsubsection{MAC-then-Encrypt (M$t$E)}
+	\configuratedText{A MAC is produced based on the plaintext, then the plaintext and MAC are together encrypted to produce a ciphertext based on both. The ciphertext (containing an encrypted MAC) is sent. AEAD is used in SSL/TLS. Even though the MtE approach has not been proven to be strongly unforgeable in itself,[15] the SSL/TLS implementation has been proven to be strongly unforgeable by Krawczyk who showed that SSL/TLS was, in fact, secure because of the encoding used alongside the MtE mechanism. Despite the theoretical security, deeper analysis of SSL/TLS modeled the protection as MAC-then-pad-then-encrypt, i.e. the plaintext is first padded to the block size of the encryption function. Padding errors often result in the detectable errors on the recipient's side, which in turn lead to padding oracle attacks, such as Lucky Thirteen.\\ AEAD is a cryptographic construction that combines both encryption and authentication in a single operation.}
+	
+	\sectionCenteredfigure[0.5]{\AEMtE}{Authenticated Encryption MtE}{ae-mte}
+
 	\newpage
 	\section{Public Key Cryptography}
 	
 	\newpage
-	\section{Digital Signatures}
+	\subsection{RSA}
+	\configuratedText{RSA is named after its inventors, Rivest, Shamir, and Adleman. The real premise behind RSA’s security is the assumption that factoring a big number is hard.}
+	
+	\subsubsection{Example}
+	\configuratedText{First, we pick two big prime numbers $p$ and $q$.
+	\begin{enumerate}
+	\item $p = 2, q = 7$
+	
+	Then we will calculate the multiplication of q and p.
+	
+	\item $p \times q  = 14$
+	
+	Now, we calculate $\phi$ function: $\phi = (p-1)(q-1)$
+	
+	\item $\phi = 1 \times 6 = 6$
+	
+	Now, we need to choose a value $e$ having the following conditions:
+	\begin{itemize}
+		\item $1 < e < \phi(n)$
+		\item e should be prime with respect to $n$ and $\phi(n)$
+	\end{itemize}
+
+	\item $e = 5$
+	
+	Finally, we choose a number under the following condition:
+	$d \times e ( mod \phi ( n )) = 1$
+	 
+	\item $d = 11$
+	
+	Finally, we have the following numbers:n = 14 ,e = 5 ,d = 11\\
+	Based on RSA, we use $e$ and $n$ as the public-key and $e$ and $d$ as the private-key.
+	\end{enumerate}
+
+	Now, assume we want to send the number $2$ to our friend. Having our fiend's public-key which has been sent to use before (5,14) we first calculate\\ $2^5 mod 14 = 4$\\
+	Now, our encrypted message is $4$. We send $4$ to our friend.\\
+	Our friend, with his private-key (11, 14) decrypts the message:\\ $4^{11} mod 14 = 2$}
+
+	\newpage
+	\subsection{Diffie-Hellman}
+	\configuratedText{Diffie-Hellman allows two individuals (Alice and Bob) to agree on a shared key even though they can only exchange messages in public.\\ he security of Diffie-Hellman depends on the difficulty of solving the discrete log problem,
+	which can be informally stated as, “If you know $g$, $p$, and $g^{x} mod p$, what is x?” In other words, what exponent did you have to raise $g$ to, $mod p$, to get $g^{x}$?\\ 
+	So, there are integers $p$ and $g$, where $p$ is a large prime (say 2048 bits) and $g$ is a number less than p with some restrictions that aren’t too important for a basic understanding of the algorithm.\\
+	The values $p$ and $g$ are known beforehand and can be publicly known, or Alice and Bob can negotiate with each other across the crowded room.\\
+	Once Alice and Bob agree on a $p$ and $g$, each chooses a large, say, 512-bit number at random and keeps it secret. Let’s call Alice’s private Diffie-Hellman key $a$ and Bob’s private
+	Diffie-Hellman key $b$. Each raises $g$ to their private Diffie-Hellman number, $mod p$, resulting in their public Diffie-Hellman value. So Alice computes $g^{a} mod p$ and Bob computes $g^{b} mod p$, and each informs the other. Finally, each raises the other side’s public value to their own
+	private value.}
+
+	\sectionCenteredfigure[0.7]{\dhprotocol}{Diffie-Hellman Exchange}{diffie-hellman-exchange}
+	
+	\configuratedText{Alice raises $g^b mod p$ to her private number $a$. Bob raises $g^a mod p$ to his private number $b$. So Alice computes $(g^b mod p)^a = g^{ba} mod p$. Bob computes $(g^a mod p)^b = g^{ab} mod p$. And, of course, $g^{ba} mod p = g^{ab} mod p$.\\
+	Without knowing either Alice’s private number $a$ or Bob’s private number $b$, nobody else can calculate $g^{ab} mod p$ in a reasonable amount of time even though they can see $g^a mod p$ and $g^b mod p$.
+	}
+	
+	\newpage
+	\subsection{Digital Signatures}
 	
 	\newpage
 	\section{Cryptographically Secure Pseudo-Random Number Generators}
 	
 	\newpage
 	\section{Authentication}
-
+	
 	\newpage
 	\section{Secret Sharing}
 
