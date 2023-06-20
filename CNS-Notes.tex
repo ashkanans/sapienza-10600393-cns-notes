@@ -461,10 +461,10 @@
 	\end{itemize}
 	}
 	\sectionCenteredfigure{\OFBCSEncrypt}{Feedback (OFB)}{output-feedback-ofb}
-
-	\subsubsection{Counter Mode (CTR)}
-	\configuratedText{also known as Integer Counter Mode (ICM) and
-	Segmented Integer Counter (SIC) mode 
+	
+	\subsection{Ensuring Privacy and Integrity Together}
+	\subsubsection{CCM (Counter with CBC-MAC)}
+	\configuratedText{also known as Integer Counter Mode (ICM) and Segmented Integer Counter (SIC) mode 
 	\begin{itemize}
 	\item 	turns a block cipher into a stream cipher: it generates the next keystream block by encrypting successive values of a "counter" 
 	\item 	counter can be any function which produces a sequence which is guaranteed not to repeat for a long time, although an actual counter is the simplest and most popular.
@@ -473,7 +473,9 @@
 	\item 	well suited to operation on a multi-processor machine where blocks can be encrypted in parallel
 	\end{itemize}}
 	\sectionCenteredfigure{\CTREncrption}{Counter Mode (CTR)}{counter-mode-ctr}
-		
+
+	\subsubsection{GCM (Galois/Counter Mode)}
+	
 	\newpage
 	\section{Data Integrity}
 	\configuratedText{A secret key system can be used to generate a cryptographic integrity check known as a MAC (Message Authentication Code). MACs are used to protect the data from modification in transit.\\ In this chapter, we’ll focus on MACs based on secret key encryption functions and MACs based on hash functions.}
@@ -579,12 +581,19 @@
 
 	\newpage
 	\section{Public Key Cryptography}
+	\configuratedText{In this chapter we'll have asymmetric techniques that secret and public keys are used instead of a single shared key. In this chapter we'll have:
+	\begin{itemize}
+	\item 	RSA, which does encryption and digital signatures
+	\item 	ElGamal and DSA and ECDSA (elliptic curve DSA), which do digital signatures
+	\item 	Diffie-Hellman and ECDH (elliptic curve Diffie-Hellman), which establish a shared secret and can also do encryption
+	\end{itemize}
+	The thing that all public key algorithms have in common is the concept that a principal has a pair of related quantities, one private and one public}
 	
 	\newpage
 	\subsection{RSA}
 	\configuratedText{RSA is named after its inventors, Rivest, Shamir, and Adleman. The real premise behind RSA’s security is the assumption that factoring a big number is hard.}
 	
-	\subsubsection{Example}
+	\subsubsection{Example 1}
 	\configuratedText{First, we pick two big prime numbers $p$ and $q$.
 	\begin{enumerate}
 	\item $p = 2, q = 7$
@@ -617,7 +626,20 @@
 	Now, assume we want to send the number $2$ to our friend. Having our fiend's public-key which has been sent to use before (5,14) we first calculate\\ $2^5 mod 14 = 4$\\
 	Now, our encrypted message is $4$. We send $4$ to our friend.\\
 	Our friend, with his private-key (11, 14) decrypts the message:\\ $4^{11} mod 14 = 2$}
+	
+	\subsubsection{Example 2} 
+	
+	\subsubsection{Properties}
+	\configuratedText{
+	\begin{itemize}
+	\item key length is variable \\The longer, the higher security (4096 bits is common)
+	\item Block size also variable \\but $ \left |plaintext  \right | \leq \left |N  \right | $ (in practice, for avoiding weak cases,
+	$ \left |plaintext\right | < \left |N  \right | $) \\ $ \left |plaintext\right | = \left |N\right | $
+	\item Slower than DES \\not used in practice for encrypting long messages\\ mostly used to encrypt a symmetric key, then used for
+		encrypting the message
+	\end{itemize}
 
+	}
 	\newpage
 	\subsection{Diffie-Hellman}
 	\configuratedText{Diffie-Hellman allows two individuals (Alice and Bob) to agree on a shared key even though they can only exchange messages in public.\\ he security of Diffie-Hellman depends on the difficulty of solving the discrete log problem,
@@ -634,14 +656,58 @@
 	Without knowing either Alice’s private number $a$ or Bob’s private number $b$, nobody else can calculate $g^{ab} mod p$ in a reasonable amount of time even though they can see $g^a mod p$ and $g^b mod p$.
 	}
 	
+	\subsubsection{MITM (Meddler-in-the-Middle) Attack}
+	\configuratedText{Diffie-Hellman alone does not prevent MITM
+	attacks, if we assume that Alice and Bob do not have credentials (such as public keys) for each other. As a result, this form of Diffie-Hellman is only secure against passive attacks where the intruder just watches the encrypted messages.}
+	
+	\sectionCenteredfigure{\DHMITM}{Diffie-Hellman with Trudy in the Middle}{diffie-hellman-with-trudy-in-the-middle}
+	
+	\subsubsection{Defenses Against MITM Attack}
+	\configuratedText{
+	\begin{itemize}
+	\item Having a personal permanent Diffie-Hellman value and do a handshake first.
+	\item 	Use any authenticated Diffie-Hellman exchange techniques
+	\item Use channel bindings
+	\end{itemize}}
+	
+	\subsubsection{Safe Primes and the Small-Subgroup Attack}
+	
+	\subsubsection{DF Properties}
+	\configuratedText{
+	\begin{itemize}
+	\item DH is at most as strong as DL in ${Z}_p^*$.
+	\item Formal equivalence unknown, though some partial results known.
+	\item Despite 25 years of effort, still considered secure to date.
+	\item Secret integers $a$ and $b$ are discarded at the end of the session, hence Diffie-Hellman key exchange achieves perfect forward secrecy, because no long-term private keying material exists to be disclosed
+	\item Computation time is $O(\log^3 p)$
+	\end{itemize}}
+	
+	\subsubsection{ElGamal Signatures}
+	
 	\newpage
 	\subsection{Digital Signatures}
+	
+	\newpage	
+	\subsection{How Secure Are RSA and Diffie-Hellman?}
+	
+	\newpage	
+	\subsection{Elliptic Curve Cryptography (ECC)}
 	
 	\newpage
 	\section{Cryptographically Secure Pseudo-Random Number Generators}
 	
 	\newpage
 	\section{Authentication}
+	\subsection{Passwords}
+	\subsection{Biometric}
+	
+	\subsection{Authentication by symmetric key}
+	\subsubsection{One way authentication using nonce}
+	\subsubsection{One way authentication using timestamps}
+	
+	\subsection{Authentication with trusted server}
+		
+	\subsection{Authentication by symmetric key}
 	
 	\newpage
 	\section{Secret Sharing}
