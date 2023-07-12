@@ -699,15 +699,21 @@
 	\newpage
 	\section{Authentication}
 	\subsection{Passwords}
+	\subsubsection{Lamport’s Hash}
+	\subsubsection{Strong Password Protocols}
 	\subsection{Biometric}
 	
 	\subsection{Authentication by symmetric key}
-	\subsubsection{One way authentication using nonce}
+	\subsubsection{One way authentication using nonce (challenge-response)}
+	\paragraph{ONE-WAY AUTHENTICATION OF ALICE\\}
+	
+	\configuratedText{arg1}
+	
+	\sectionCenteredfigure{\oneWayAuth}{Bob Authenticates Alice Based on a Shared Secret $ K_{(A-B)} $}{bob-authenticates-alice-based-on-a-shared-secret-ka-b}
+	
 	\subsubsection{One way authentication using timestamps}
 	
 	\subsection{Authentication with trusted server}
-		
-	\subsection{Authentication by symmetric key}
 	
 	\newpage
 	\section{Secret Sharing}
@@ -733,4 +739,286 @@
 	\newpage
 	\section{Web Tracking}	
 		
+	\newpage
+	\section{Exams}	
+	\subsection{9 January 2023}	
+	\subsubsection{Ex 1. Hashing}	
+	\begin{enumerate}
+	\item 	What are pros and cons of keyed and unkeyed hashing?
+	\item 	Do cryptographic hash functions have less collision than non-cryptographic hashing functions? Elaborate.
+	\item 	Why are strongly collision-resistant functions also weakly collision-resistant? 
+	\item 	Is the traditional binary representation of integers a cryptographic hash function? Explain.
+	\end{enumerate}
+	
+	\paragraph{Solution:}
+	
+	\configuratedText{
+	\begin{enumerate}
+	\item      Pros and Cons of Keyed and Unkeyed Hashing:
+	
+	    Keyed Hashing: Keyed hashing, also known as HMAC (Hash-based Message Authentication Code), provides an additional layer of security by incorporating a secret key into the hashing process. Pros of keyed hashing include:
+	        \begin{itemize}
+	        \item Authentication: The use of a secret key ensures that only entities possessing the key can generate or verify the hash, providing authentication of the data.
+	        \item 	        Tamper Resistance: Modifying the data or the key will result in a different hash value, making it difficult for an attacker to tamper with the data without detection.
+	        \end{itemize}
+	    Unkeyed Hashing: Unkeyed hashing, also referred to as non-keyed hashing, does not utilize a secret key in the hashing process. Pros of unkeyed hashing include:
+	      \begin{itemize}
+	      \item   Simplicity: Unkeyed hash functions are generally simpler to implement and use, as they do not require the management of secret keys.
+	      \item 	        Efficiency: Without the additional overhead of a secret key, unkeyed hash functions can be computationally more efficient.
+	      \end{itemize}
+	\sectionCenteredfigure{\keyedHashed}{Keyed Hashed Map}{keyed-hashed-map}
+	
+	\item  Cryptographic Hash Functions and Collisions:\\
+		    Cryptographic hash functions are designed to have strong collision resistance, meaning it is computationally infeasible to find two different inputs that produce the same hash value (collision). Non-cryptographic hashing functions, on the other hand, may have a higher probability of collisions due to their primary focus on efficiency rather than collision resistance.
+		
+		While cryptographic hash functions aim to minimize collisions, it is important to note that collisions are still possible due to the pigeonhole principle, which states that if the number of possible inputs is larger than the number of possible hash outputs, collisions are inevitable. However, the strength of cryptographic hash functions lies in the difficulty of finding such collisions, making them highly useful for applications like data integrity verification, password storage, and digital signatures.
+	\item Strong Collision Resistance and Weak Collision Resistance:\\
+	    Strong collision resistance refers to the property of a hash function where it is computationally infeasible to find any two distinct inputs that produce the same hash value. Weak collision resistance, on the other hand, means that it is computationally difficult to find two specific inputs that result in the same hash value.
+	
+	The reason why strongly collision-resistant functions are also weakly collision-resistant is that if an attacker can find a specific pair of inputs that collide, they can demonstrate a general collision by applying additional modifications to those inputs. In other words, if there exists a pair of inputs A and B such that hash(A) = hash(B), an attacker can create a new pair of inputs A' and B' such that hash(A') = hash(B') by manipulating A and B based on the collision found.
+	\end{enumerate}}
+	
+	\subsubsection{Ex 2. Key exchange}	
+	\configuratedText{Describe at least two methods used for letting two parties exchange a secret key.}
+	
+	\paragraph{Solution:}
+		
+	\configuratedText{    \begin{enumerate}
+	\item Diffie-Hellman Key Exchange: Diffie-Hellman allows two parties, Alice and Bob, to agree on a shared secret key over an insecure channel. They each generate their own public-private key pairs and exchange public keys. By performing mathematical operations with their own private keys and the other party's public key, they can compute a shared secret that can be used as a symmetric key for encryption and decryption.
+
+	\item 	    Key Exchange using Public Key Infrastructure (PKI): In a PKI-based key exchange, Alice and Bob each have a pair of public and private keys. They obtain each other's public keys through a trusted certificate authority (CA) or a secure key distribution protocol. Alice can encrypt the secret key with Bob's public key and send it to him. Bob can then decrypt the encrypted key using his private key to obtain the shared secret.
+
+	\item 	    Key Transport using Symmetric Encryption: In this method, a trusted third party, called a Key Distribution Center (KDC), is involved. Alice and Bob both share a secret key with the KDC. When they want to exchange a secret key, they request the KDC to securely send the key to each other. The KDC uses symmetric encryption to protect the key during transmission.
+
+	\item 	    Pre-shared Key (PSK) Exchange: In scenarios where Alice and Bob already share a secret key, such as a previously established secure channel or a shared secret obtained through an out-of-band method, they can directly use this shared key as the secret key for their communication.
+
+	\item 	    Secure Sockets Layer/Transport Layer Security (SSL/TLS) Handshake: SSL/TLS protocols use asymmetric encryption and digital certificates to establish a secure channel between two parties. During the handshake process, the client and server exchange public keys and establish a shared secret key for subsequent symmetric encryption.
+	\end{enumerate}}
+	
+	\subsubsection{Ex 3. Authentication}	
+	\configuratedText{\begin{enumerate}
+	\item Why do servers that authenticate users with Lamport hashing prefer that the user always use the same device?
+	\item 	With reference to password-based authentication, describe a (any) protocol to make client and server talk so that the client supplies the password but prevents replay and reflection attacks.
+	\item 	Can digital signature (whatever it is) authenticate a user of a web application? Discuss.
+	\end{enumerate}}
+	
+	\paragraph{Solution:}
+		
+	\configuratedText{    \begin{enumerate}
+	\item     Servers that authenticate users with Lamport hashing prefer that the user always use the same device because Lamport hashing is a one-time password scheme that relies on the secrecy of the password and the server's knowledge of the user's password hash. When the user authenticates with the server, the server compares the received password hash with its stored hash. However, if the user switches devices, the stored password hash on the server will not match the hash generated by the new device.
+	
+	To address this issue, the server would need to store multiple password hashes corresponding to each device used by the user, which increases complexity and potential security risks. Therefore, to maintain simplicity and security, it is preferable for users to consistently use the same device for authentication with servers that employ Lamport hashing.
+
+	\item 	    When it comes to password-based authentication, a protocol that can address replay and reflection attacks is the use of a challenge-response mechanism with the inclusion of a timestamp.
+	
+	Here's a high-level description of the protocol:
+	
+	\begin{itemize}
+	\item 	    The client sends a request to the server to initiate the authentication process.
+	\item 	    The server generates a random challenge and sends it to the client.
+	\item 	    The client combines the challenge with the password, computes a hash of the concatenation (e.g., using a cryptographic hash function), and sends the hash value back to the server.
+	\item 	    The server verifies the received hash by performing the same hash computation using the stored password and the challenge.
+	\item 	    To prevent replay attacks, the server includes a timestamp in the challenge. The client includes this timestamp in the response, and the server verifies that it matches the expected value within an acceptable time window.
+	\end{itemize}
+	
+	This protocol prevents replay attacks because the client cannot simply replay a previously captured response. Additionally, it mitigates reflection attacks because the server includes a challenge that is unique for each authentication attempt.
+
+	\item 	    Key Transport using Symmetric Encryption: In this method, a trusted third party, called a Key Distribution Center (KDC), is involved. Alice and Bob both share a secret key with the KDC. When they want to exchange a secret key, they request the KDC to securely send the key to each other. The KDC uses symmetric encryption to protect the key during transmission.
+
+	\item 	    Pre-shared Key (PSK) Exchange: In scenarios where Alice and Bob already share a secret key, such as a previously established secure channel or a shared secret obtained through an out-of-band method, they can directly use this shared key as the secret key for their communication.
+
+	\item 	    Secure Sockets Layer/Transport Layer Security (SSL/TLS) Handshake: SSL/TLS protocols use asymmetric encryption and digital certificates to establish a secure channel between two parties. During the handshake process, the client and server exchange public keys and establish a shared secret key for subsequent symmetric encryption.
+	\end{enumerate}}
+	
+	\subsubsection{Ex 4. Shamir secret sharing}
+	\configuratedText{\begin{enumerate}
+	\item In a Shamir scheme (2, 5) users got the points A=(1, 5), B=(2, 0), C=(3, 2), D=(4, 4) and E=(5, 6). Assume to work on GF(7). Reconstruct and return the secret starting from the points A and B.
+	\item Reconstruct again the secret starting from D and E, and verify that the secret is the same.
+	\end{enumerate}}
+	
+	\paragraph{Solution:}
+	
+	\configuratedText{
+	\textbf{Reconstruction starting from points A and B}\\
+	
+	Given points:
+	\[A = (1, 5)\]
+	\[B = (2, 0)\]
+	
+	To reconstruct the secret, we need to interpolate a polynomial of degree 1 (since we have 2 points).
+	
+	The polynomial can be represented as:
+	\[P(x) = a + bx\]
+	
+	Using the given points, we can set up two equations:
+	
+	\[5 = a + b \cdot 1\]
+	\[0 = a + b \cdot 2\]
+	
+	Solving these equations, we find:
+	\[a = 2\]
+	\[b = 3\]
+	
+	Thus, the polynomial is:
+	\[P(x) = 2 + 3x\]
+	
+	To find the secret, we evaluate the polynomial at \(x = 0\):
+	\[P(0) = 2 + 3 \cdot 0 = 2\]
+	
+	Therefore, the secret is 2.\\
+	
+	
+	\textbf{Reconstruction starting from points D and E}\\
+	
+	Given points:
+	\[D = (4, 4)\]
+	\[E = (5, 6)\]
+	
+	Using the same process, we set up the equations:
+	
+	\[4 = a + b \cdot 4\]
+	\[6 = a + b \cdot 5\]
+	
+	Solving these equations, we find:
+	\[a = 0\]
+	\[b = 6\]
+	
+	Thus, the polynomial is:
+	\[P(x) = 0 + 6x\]
+	
+	To find the secret, we evaluate the polynomial at \(x = 0\):
+	\[P(0) = 0 + 6 \cdot 0 = 0\]
+	
+	Therefore, the secret is 0.
+	
+	By reconstructing the secret starting from points A and B and points D and E, we obtain the same secret value of 0.
+	}
+	
+	\subsubsection{Firewalls }
+	\configuratedText{\begin{enumerate}
+	\item When iptables is used as a personal firewall is there any case where the routing chain needs to be configured with rules?
+	\item 	Suppose iptables is running on host H which is protecting a LAN, from which it can be reached with the IP 192.168.1.254/24. Write appropriate rules so that the only network connection allowed to H is via ssh (two-way talk) 18 the LAN host 192.168.1.2/24 to allow firewall configuration. All other network connections to and from H are prohibited.
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+	\todo{Firewall}
+	
+	\newpage
+	\subsection{3 February 2023}	
+	\subsubsection{Ex 1. Authenticity versus authentication}	
+	\configuratedText{Does one contain the other? Or does the other contain one? Any differences? Carefully explain.}
+	
+	\paragraph{Solution:}
+	\configuratedText{\begin{itemize}
+	\item Authenticity:
+	Authenticity refers to the quality or state of being genuine, original, or trustworthy. It relates to the assurance that something is what it claims to be and has not been tampered with or altered. Authenticity focuses on the integrity and trustworthiness of an entity, such as a message, data, or object. It ensures that the entity has not been modified, forged, or manipulated in any unauthorized way. Establishing authenticity involves mechanisms that provide evidence of the origin and integrity of the entity, such as digital signatures, checksums, or hashing.
+	
+	\item 	    Authentication:
+	Authentication, on the other hand, is the process of verifying the identity or legitimacy of an entity, such as a user, system, or device. It involves confirming that the claimed identity of the entity is valid and reliable. Authentication is about establishing trust in the identity of the entity and ensuring that it is authorized to access certain resources or perform specific actions. Common authentication methods include passwords, biometrics, digital certificates, or multi-factor authentication.
+	\end{itemize}
+	Authenticity can contribute to the overall trustworthiness of an authentication process by verifying the integrity of the data or message being authenticated. However, authentication itself does not guarantee authenticity. Authenticity is a broader concept that encompasses the trustworthiness of the entire entity, while authentication is a subset that specifically verifies identity.
+	}
+	
+	\subsubsection{Ex 2. Symmetric encryption/decryption}	
+	\configuratedText{\begin{enumerate}
+	\item Describe the architecture of OFB, both for encryption and for decryption.
+	\item 	Does OFB need to use a randomly generated IV at any encryption? Why?
+	\item 	What is a KDF and why is it useful? 
+	\item 	What is the effect of the following command line string?\\
+	 	\texttt{echo "SilverSurfer" -n | openssl enc -aes-128-cbc -p -out out.enc}
+	\item 	If in CBC the attacker flips the third bit of the first ciphertext block, and no integrity mechanism is in place, what is the total effect of that in Bob's reconstructed plaintext message? Discuss.
+	\item 	If in the CBC it is Alice who inverts the third bit of the first plaintext block, and no integrity mechanism is provided, what is the total effect of this intervention in Bob's reconstructed plaintext message? Discuss.
+	\end{enumerate}}
+	
+
+	
+	\subsubsection{Ex 3. Digital certificates}	
+	\configuratedText{\begin{enumerate}
+	\item Compare CRLs to OCSP
+	\item 	What is OCSP stapling and why is it done?
+	\item 	Why don't we need the https protocol but can use plain http in retrieving a certificate?
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 4. Digital signatures}	
+	\configuratedText{\begin{enumerate}
+	\item Alice and Bob digitally sign the same document M, which is a contract. If Alice is the first signer is there a difference whether Bob signs M or M with Alice's signature? Discuss.
+	\item 	f the verification of a digital signature fails (without diagnostics, so we don't know the reason for the failure), what is it correct to infer? Discuss.
+	\item 	The following sentence contains a poorly posed (and therefore incorrect) question, written solely to confuse ideas.\\
+	If Alice wants to digitally sign a document, but she doesn't know the public key, how should she do it?\\
+	Discuss why such a question should not be asked.
+	\end{enumerate}}
+	
+	\paragraph{Solution:}
+
+	\subsubsection{Ex 5. Firewalls}	
+	\configuratedText{\begin{enumerate}
+	\item Compare blacklisting with whitelisting and discuss the impact of those policies on iptables.
+	\item 	Suppose iptables is running on host H, which is protecting a LAN. Write appropriate rules so that
+		\begin{enumerate}
+		\item 	H does not allow any incoming or outgoing network connections (can only be configured using the local console)
+		\item 	H allows any connection from the LAN to the Internet, but does not allow opening connections from the Internet to the LAN.
+		\end{enumerate}
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+	
+	\newpage
+	\subsection{9 June 2023}
+	\subsubsection{Ex 1. Symmetric ciphers}
+	\configuratedText{\begin{enumerate}
+	\item Describe the scenario of symmetric ciphers and define the concepts of:\\ synchronous/asynchronous stream ciphers, block ciphers and modes of operations.\\
+	\textit{If definition is wrong subsequent questions cannot be correctly answered}
+	\item Describe the RC4 cipher (both the key generation and the encryption process). What type of cipher is it?
+	\item Describe and compare OFB and CTR. Can you suggest possible design criteria for their adoption?
+	\end{enumerate}}
+	
+	\paragraph{Solution:}
+	
+	\subsubsection{Ex 2. Man in the middle}	
+	\configuratedText{\begin{enumerate}
+	\item Describe the attack Man-In-The-Middle, as well as a possible scenario where it could be run.
+	\item Alice suspects she is currently being the target of a Man-In-The-Middle attack, and she decides to hire you as a personal adviser. Is it still possible to carry out safe actions? Discuss.
+	\end{enumerate}}
+	
+	\paragraph{Solution:}
+	
+	\subsubsection{Ex 3. Hashing}	
+	\configuratedText{\begin{enumerate}
+	\item Define the properties that qualify a hashing function as cryptographic (the more formal, the better).
+	\item Describe the Merkle-Damgård construction. If the underlying hash function maps 256b blocks into 128b blocks, how many rounds are required for hashing a 140KB file?
+	\item Discuss and compare possible schemes for keying a hash function.
+	\end{enumerate}}
+	
+	\paragraph{Solution:}
+	
+	\subsubsection{Ex 4. RSA verification}	
+	\configuratedText{\begin{enumerate}
+	\item Describe how to verify an RSA digital signature.
+	\item Explicitly describe the possible causes of a verification failure. For having non-repudiation is the verification needed?
+	\end{enumerate}}
+	
+	\paragraph{Solution:}
+	
+	\subsubsection{Ex 5. Authentication}
+	\configuratedText{\begin{enumerate}
+	\item Discuss the security of the following challenge-based scheme for mutual authentication, where Alice (A) and Bob (B) share a secret key K: (information below is transmitted as clear text)\\
+	A $\rightarrow$ B: (A, NA, B) { NA is a nonce chosen by A}\\
+	B $\rightarrow$ A: (B, NB, K(NA), A) { NB is a nonce chosen by B }\\
+	A $\rightarrow$ B: (A, K(NB), B)
+	\item How would you improve the above schema?
+	\end{enumerate}}
+	
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 6. Miscellaneous}	
+	\configuratedText{Provide short answers to the following questions.
+	\begin{enumerate}
+	\item Compute $5^{12241}$ mod $13$
+	\item Describe as best as you can the meaning of the following command\\
+	\texttt{iptables -A INPUT -p tcp -s 0/0-d 195.55.55.78 --sport 513:65535 --dport 22 -m state --state NEW, ESTABLISHED -j ACCEPT}
+	\item Describe as best as you can the meaning of the following command\\
+	\texttt{ssh -L 44044:192.168.1.221:22 user@host.example.com}
+	\end{enumerate}}
 \end{document}
