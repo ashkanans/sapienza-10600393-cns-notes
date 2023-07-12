@@ -196,6 +196,11 @@
 \usepackage{titlesec}
 \usepackage{ragged2e}
 \usepackage{todonotes}
+\usepackage{tocloft}
+
+\cftsetindents{section}{1.5em}{5.0em}
+\cftsetindents{subsection}{2em}{5.0em}
+\cftsetindents{subsubsection}{3em}{5.0em}
 
 % Use the new command to set the font sizes and titleformat settings
 \myheadingstyles
@@ -963,7 +968,60 @@
 	\end{enumerate}}
 
 	\paragraph{Solution:}
+
+	\newpage
+	\subsection{6 April 2023}
+	\subsubsection{Ex 1. Digital signatures and time-stamping}	
+	\configuratedText{\begin{enumerate}
+	\item Describe the basic characteristics of the DSS approach to digital signing. What is the advantage of using two pairs of keys for each signature?
+	\item Alice, Bob and Charlie have made a written agreement and now need to digitally sign it, and to attach a secure time-stamp to each signature. Describe what type of infrastructure they need and a sequence of steps for accomplishing their task.
+	\end{enumerate}}
 	
+	\paragraph{Solution:}
+	
+	\subsubsection{Ex 2. Cryptographic hashing functions}	
+	\configuratedText{\begin{enumerate}
+	\item Describe the requirements to be met by a cryptographic hashing function.
+	\item Describe the Merkle-Damgard construction for hashing a message longer than just one block.
+	\item Discuss the security of (keyed) hashing k$ | $m, m$ | $k, k$ | $m$ | $k, where m is a message. k is a secret key and $ | $ a symbol denoting concatenation.
+	\end{enumerate}}
+	
+	\paragraph{Solution:}
+	
+	\subsubsection{Ex 3. Rock-paper-scissors game}	
+	\configuratedText{Alice and Bob play a Rock\-paper\-scissors match. In a single match the two parties simultaneously form one of the shapes and the winner is established by the simple chain of circular rules rock beats scissors, scissor beats paper and paper beats rocks.\\
+	The two players use the following protocol:\\
+	(Alice and Bob choose their shapes a and b, where h is a known cryptographic hash function.)\\ 
+	A$\rightarrow$B: $ h(a) $\\
+	B$\rightarrow$A: $ b $\\
+	A$\rightarrow$B: $ a $\\
+	(Bob checks $ h(a) $; then both Alice and Bob know the winner of the game)
+	\begin{enumerate}
+	\item Discuss possible weaknesses of the protocol, with respect to possible fraudulent behaviors from Alice and(or) Bob, both ready to cheat in order to win the game.
+	\item Fix the weaknesses (small changes), without introducing third parties or public-key cryptography.
+	\end{enumerate}}
+	
+	\paragraph{Solution:}
+	
+	\subsubsection{Ex 4. Firewall}	
+	\configuratedText{\begin{enumerate}
+	\item llustrate the most relevant characteristics of iptables, employed as a firewall.
+	\item What iptables rules would you set for a mail server accepting (bidirectional)
+	conversations in EMSTP (port 465) and IMAP (port 993), having a network interface eth1 exposed to the Internet and another network interface eth2 exposed to the corporate network? Default policy is DENY.
+	\end{enumerate}}
+	
+	\paragraph{Solution:}
+	
+	\subsubsection{Ex 5. Miscellaneous}	
+	\configuratedText{Provide short answers to the following questions.
+	\begin{enumerate}
+	\item What is the Optimal Asymmetric Encryption Padding (OAEP) and why does it provide "all-or-nothing" security?
+	\item Determine the multiplicative inverse of 47 mod 64.
+	\item Given the two primes 23 and 11 find integer a $ > $ 1 such that $ a^{11} = 1 $ mod $ 23 $
+	\end{enumerate}}
+	
+	\paragraph{Solution:}
+		
 	\newpage
 	\subsection{9 June 2023}
 	\subsubsection{Ex 1. Symmetric ciphers}
@@ -1021,4 +1079,362 @@
 	\item Describe as best as you can the meaning of the following command\\
 	\texttt{ssh -L 44044:192.168.1.221:22 user@host.example.com}
 	\end{enumerate}}
+
+	\paragraph{Solution:}
+	
+	\newpage
+	\subsection{13 January 2022 - A}
+	
+	\subsubsection{Ex 1. Cryptographic hashing functions}	
+	\configuratedText{
+	\begin{enumerate}
+	\item State a minimal but sufficient set of conditions why a hashing function be
+	cryptographic.
+	\item Can I use a cryptographic hashing function for a hash table? Motivate.
+	\item Can I use the hashing function of a hash table as a cryptographic hashing function?
+	Motivate.
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 2. Authentication}	
+	\configuratedText{
+	\begin{enumerate}
+	\item Username/password based authentication: propose a protocol for having this type of
+	authentication in the LAN, resistant to all types of replay attacks. Can you avoid saving user
+	passwords on the server?
+	\item How could an authentication process be based on a public key and what are the
+	relevant weaknesses?
+	\item Locate the weakness in this bidirectional challenge-response authentication scheme
+	and mitigate it:\\
+	A $\rightarrow$ B: $ A $, $ Enc(a, X) $\\
+	B $\rightarrow$ A: $ a $, $ Enc(b, X) $\\
+	A $\rightarrow$ B: $ b $\\
+	where X is a shared secret key, Enc(y, X) denotes symmetric encryption of y by key X, a is a
+	nonce chosen by A and b is a nonce chosen by B
+	\item Bob is a smart guy and knows how to invent 128-bits random passphrases (typeable
+	on keyboard) that are robust against dictionary attacks. Alice tells him that in spite of such
+	robustness a 128-bits random key is more secure. Bob replies that the security is the same,
+	but the passphrase can be more easily remembered. What's your position? Explain
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 3. Access control}	
+	\configuratedText{
+	\begin{enumerate}
+	\item Is the HRU (Harrison, Ruzzo, Ullman) model secure against offline dictionary attacks? Explain.
+	\item Give at least two cases where HRU is decidable. Explain
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 4. Firewalls}	
+	\configuratedText{Assume that the iptables software is running on host H, having a network interface eth0 (IP:192.168.0.2) connected to a LAN (IP: 192.168.0.0/24; the LAN is protected by H) and a network interface eth1 (IP: 151.100.4.3) connected to the Internet. Assume that the default policy for all built-in chains is DROP
+	\begin{enumerate}
+	\item Since the LAN contains only local hosts with private IP addresses, it is not possible to
+	directly contact local hosts from the Internet (no IP remapping). However, if H accepts, local
+	hosts can establish two-ways communications with remote hosts on the Internet, based on
+	TCP. For this purpose, which rules will you have to define on the perimeter firewall?
+	\item Define suitable rules for mitigating a distributed DOS attack to H, based on ping-flooding. Avoid blocking/slowing down other protocols.
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 5. Short answer (at most 4 lines)}	
+	\configuratedText{
+	\begin{enumerate}
+	\item Make a comparison between HMAC and digital signing for the purpose of
+	non-repudiation.
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+	
+	\newpage
+	\subsection{13 January 2022 - B}
+
+	\subsubsection{Ex 1. Data integrity}	
+	\configuratedText{
+	\begin{enumerate}
+	\item Describe what we mean by data integrity and discuss the use of keyed HMACs for
+	guaranteeing the integrity of a file being transmitted over the network (no other guarantees
+	requested).
+	\item Describe what we mean by data integrity and discuss the use of keyed HMACs for
+	guaranteeing the integrity of a file being transmitted over the network (no other guarantees
+	requested).
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 2. Diffie-Hellman}	
+	\configuratedText{
+	\begin{enumerate}
+	\item Describe in detail how two parties can establish a secret key by using the
+	Diffie-Hellman scheme and discuss the vulnerability of the approach.
+	\item Generalize Diffie-Hellman so that three parties can establish a shared secret key.
+	\item Describe a scheme for mutual authentication that is strong with respect to dictionary
+	attack and that uses Diffie-Hellman for defining a session key. Do vulnerabilities discussed
+	in 1 still hold?
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 3. Leader selection}	
+	\configuratedText{A leader should be selected by randomly choosing one of three parties A, B and C. The parties use the following protocol:\\
+
+	
+	\begin{enumerate}
+	\item Discuss the security of the protocol with respect to possible fraudulent behaviors of
+	A, B and/or C. In particular, is it possible for some of the parties to deterministically choose
+	the leader, while the others are not aware of the fraud?
+	\item Fix the protocol.
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 4. Shamir}	
+	\configuratedText{
+	\begin{enumerate}
+	\item Describe the Shamir scheme (k, n) for sharing a secret
+	\item Make a numerical example for the case (2, 4), for sharing the secret number 6. Show
+	how the 4 fragments are computed.
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 5. Access control}	
+	\configuratedText{
+	\begin{enumerate}
+	\item  Illustrate the DAC model (from Harrison-Ruzzo-Ullman, or HRU), define the concept
+	of safety of the protection system and discuss what practical problems arise within the
+	model. 
+	\item Why is the DAC model vulnerable to Trojans? What type of access control model can
+	prevent them from illegally accessing private data? Discuss.
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+	
+	\subsubsection{Ex 6. Miscellaneous}	
+	\configuratedText{Provide short answers (2 lines max per question) to the following questions.
+	\begin{enumerate}
+	\item RSA: if p = 13 and q = 17, what is the range for exponent e?
+	\item Can iptables block incoming datagrams that are IPSec-tunneled packets going to
+	port 25?
+	\item What is port forwarding and what protocol implements it?
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+	
+	\newpage
+	\subsection{17 June 2022}
+
+\subsubsection{Ex 1.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 2.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 3.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 4.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 5.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+	
+	\newpage
+	\subsection{14 July 2022}	
+
+\subsubsection{Ex 1.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 2.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 3.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 4.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 5.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\newpage
+	\subsection{8 September 2022}	
+
+\subsubsection{Ex 1.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 2.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 3.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 4.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 5.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+	
+	\newpage
+	\subsection{25 October 2022}	
+
+\subsubsection{Ex 1.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 2.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 3.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 4.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
+	\subsubsection{Ex 5.}	
+	\configuratedText{
+	\begin{enumerate}
+	\item 
+	\item
+	\item 
+	\end{enumerate}}
+
+	\paragraph{Solution:}
+		
 \end{document}
