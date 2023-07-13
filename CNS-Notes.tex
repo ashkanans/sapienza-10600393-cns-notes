@@ -197,6 +197,7 @@
 \usepackage{ragged2e}
 \usepackage{todonotes}
 \usepackage{tocloft}
+\usepackage{changepage}
 
 \cftsetindents{section}{1.5em}{5.0em}
 \cftsetindents{subsection}{2em}{5.0em}
@@ -466,18 +467,21 @@
 	\end{itemize}
 	}
 	\sectionCenteredfigure{\OFBCSEncrypt}{Feedback (OFB)}{output-feedback-ofb}
-	
-	\subsection{Ensuring Privacy and Integrity Together}
-	\subsubsection{CCM (Counter with CBC-MAC)}
+
+	\subsubsection{COUNTER MODE (CTR)}
 	\configuratedText{also known as Integer Counter Mode (ICM) and Segmented Integer Counter (SIC) mode 
-	\begin{itemize}
-	\item 	turns a block cipher into a stream cipher: it generates the next keystream block by encrypting successive values of a "counter" 
-	\item 	counter can be any function which produces a sequence which is guaranteed not to repeat for a long time, although an actual counter is the simplest and most popular.
-	\item 	the usage of a simple deterministic input function raised controversial discussions 
-	\item 	has similar characteristics to OFB, but also allows a random access property during decryption
-	\item 	well suited to operation on a multi-processor machine where blocks can be encrypted in parallel
+		\begin{itemize}
+			\item 	turns a block cipher into a stream cipher: it generates the next keystream block by encrypting successive values of a "counter" 
+			\item 	counter can be any function which produces a sequence which is guaranteed not to repeat for a long time, although an actual counter is the simplest and most popular.
+			\item 	the usage of a simple deterministic input function raised controversial discussions 
+			\item 	has similar characteristics to OFB, but also allows a random access property during decryption
+			\item 	well suited to operation on a multi-processor machine where blocks can be encrypted in parallel
 	\end{itemize}}
 	\sectionCenteredfigure{\CTREncrption}{Counter Mode (CTR)}{counter-mode-ctr}
+	
+	\subsection{Ensuring Privacy and Integrity Together}
+	
+	\subsubsection{CCM (Counter with CBC-MAC)}
 
 	\subsubsection{GCM (Galois/Counter Mode)}
 	
@@ -731,6 +735,574 @@
 	
 	\newpage
 	\section{Firewalls}
+	\configuratedText{Firewalls are security devices or software that are used to separate a local network from the Internet. They control and monitor network traffic by limiting inbound and outbound traffic, allowing only authorized traffic to pass through. Firewalls also hide the internal network from the external world and regulate access to services.
+		
+		\begin{itemize}
+			\item In most cases, a firewall acts as a bridge between an internal network and the public internet. It examines the headers and sometimes the payloads of network packets to determine whether to allow or block them. This type of firewall is known as a \textbf{packet-filtering router} or packet filter. It can be \textit{stateless} (only considers individual packets) or \textit{stateful} (maintains information about the state of connections).
+			
+			\item Another type of firewall is a \textbf{proxy gateway}. All incoming and outgoing traffic is directed through the firewall, and outgoing traffic appears to originate from the firewall itself. Proxy gateways can operate at the \textit{application level} or \textit{circuit level}. Application-level proxies use separate proxies for each application, such as SMTP for email, HTTP for web browsing, and FTP for file transfers. Filtering rules in application-level proxies are application-specific. Circuit-level proxies, on the other hand, are application-independent and work transparently.
+			
+			\item In addition to network-level firewalls, there are \textbf{personal firewalls} that are installed on end-user machines. These firewalls have application-specific rules and can control outbound connections from specific applications. For example, a personal firewall may block outbound telnet connections from an email client.
+		\end{itemize}
+		
+		While firewalls provide an important layer of security, it's important to note their limitations. Firewalls cannot protect against attacks that manage to bypass the firewall or originate from within the protected network unless a personal firewall is used. They also cannot prevent or block all possible viruses and worms, as the effectiveness of virus and worm protection depends on the specific characteristics of the operating system and the firewall software itself.
+	}
+	
+	\subsection{Packet Filtering}
+	
+	\configuratedText{Packet filtering is a method used by firewalls to make decisions on whether to allow or reject individual packets based on specific criteria. Each packet is examined independently, and the decision is made solely based on the information available in the packet itself. Packet filtering is \textit{stateless}, meaning it does not consider the context of the packet, such as the TCP connection or the application it belongs to.
+	
+	The information used for packet filtering includes the source and destination IP addresses, ports, protocol identifier (\textbf{TCP}, \textbf{UDP}, \textbf{ICMP}, etc.), \textbf{TCP flags} (\textbf{SYN}, \textbf{ACK}, \textbf{RST}, \textbf{PSH}, \textbf{FIN}), and \textbf{ICMP message type}. Filtering rules are created based on \textit{pattern-matching} against these packet attributes.
+	
+	Default rules are defined to determine whether to \textbf{accept} or \textbf{reject} packets that do not match any specific filtering rule.
+	
+	As an example, let's consider an FTP packet filter. The following filtering rules allow a user to FTP from any IP address to the FTP server at 172.168.10.12:
+	
+	\begin{itemize}
+		\item \texttt{access-list 100 permit tcp any gt 1023 host 172.168.10.12 eq 21}
+		\item \texttt{access-list 100 permit tcp any gt 1023 host 172.168.10.12 eq 20}
+		\item \texttt{access-list 101 permit tcp host 172.168.10.12 eq 21 any gt 1023}
+		\item \texttt{access-list 101 permit tcp host 172.168.10.12 eq 20 any gt 1023}
+	\end{itemize}
+	
+	These rules allow packets from any client to the FTP control and data ports on the FTP server and also allow the FTP server to send packets back to any IP address with TCP ports greater than 1023. The rules are applied to inbound (\texttt{access-list 100}) and outbound (\texttt{access-list 101}) traffic on the Ethernet 0 interface.
+	
+	Packet filtering has certain weaknesses. It does not prevent \textbf{application-specific attacks}, such as buffer overflows in URL decoding routines. Packet filters lack \textbf{user authentication} mechanisms, except for address-based authentication which can be spoofed. They also lack upper-level functionality and are vulnerable to \textbf{TCP/IP attacks} like spoofing.
+	
+	To mitigate these weaknesses, firewalls can maintain a list of allowed addresses for each interface, ensuring that packets with internal addresses do not originate from outside the network. However, security breaches can still occur due to misconfiguration.
+	
+	\textbf{Fragmentation attacks} are a specific type of attack that exploits packet filtering. In a fragmentation attack, multiple packets are designed in such a way that each packet individually passes through the firewall. However, when the packets are assembled at the receiving end (where it is possible to check the TCP header), they form a packet that should have been dropped by the firewall. This allows the attacker to bypass the firewall's filtering rules.}
+
+	\subsection{Stateless Packet Filtering and Session Filtering}
+	
+	\configuratedText{Stateless packet filtering has a limitation when it comes to handling \textbf{TCP connections} that use \textbf{port numbers}. In TCP connections, ports with numbers less than 1024 are typically permanently assigned to servers, while clients use ports numbered from 1024 to 16383. Clients must have these ports available to receive responses from servers.
+	
+	The limitation arises when a firewall receives an incoming request to a client's port numbered, let's say, 1234. The firewall cannot determine whether this incoming traffic is a legitimate response from a previously established connection or if it is malicious traffic. Without keeping \textit{state information} for each connection, the firewall cannot make an accurate decision.
+	
+	To overcome this limitation, \textbf{session filtering} is used. Session filtering takes into account the context of a connection when making filtering decisions. When a new connection is established, it is checked against the security policy. If it is an existing connection, the firewall looks it up in its session table and updates the table if necessary. For example, incoming traffic to a high-numbered port would only be allowed if there is an established connection to that port.
+	
+	However, session filtering is more challenging for stateless protocols like \textbf{UDP} and \textbf{ICMP}. Stateless protocols do not have the concept of connections, making it difficult to track and filter them accurately. In session filtering, a typical approach is to deny everything that is not explicitly allowed. Care must be taken when filtering out service traffic such as ICMP, as it is an essential part of network communication.
+	
+	It's important to note that even with session filtering, there are still limitations. Firewalls can be bypassed with techniques like \textbf{IP tunneling}, where packets are encapsulated within other protocols to evade filtering mechanisms.}
+	
+	\subsection{IP Tunneling}
+	
+	\configuratedText{\textbf{IP tunneling} is a technique used to encapsulate one network protocol within another network protocol, allowing the traffic of the encapsulated protocol to traverse a network that may not support it directly. It involves wrapping the original protocol packets within the payload of the outer protocol packets.
+	
+	The concept of IP tunneling is based on the idea of creating a virtual "tunnel" or pathway through a network by encapsulating the original packets within new packets. The encapsulated packets can then be transmitted over a network that may not natively support the encapsulated protocol.}
+
+	\subsection{iptables}
+	
+	\configuratedText{\textbf{iptables} is a powerful command-line utility in Linux used for setting up, maintaining, and inspecting the tables of IPv4 packet filter rules in the Linux kernel. It allows administrators to define rules that determine how packets are handled and filtered within the network stack.
+	
+	iptables operates with different tables, each containing built-in chains and the possibility of user-defined chains. The commonly used tables include:
+	
+	\begin{itemize}
+		\item \textbf{Filter}: This is the default table and is responsible for filtering packets. It contains built-in chains such as INPUT (for packets destined to local sockets), FORWARD (for packets being routed through the system), and OUTPUT (for locally-generated packets).
+		
+		\item \textbf{NAT}: The NAT (Network Address Translation) table is used for address translation, allowing packets to be modified before routing. It includes chains like PREROUTING (for altering incoming packets), OUTPUT (for altering locally-generated packets), and POSTROUTING (for altering outgoing packets).
+		
+		\item \textbf{Mangle}: The mangle table is used for specialized packet alteration, such as modifying TCP header values or packet quality of service. It contains chains like PREROUTING, OUTPUT, INPUT, FORWARD, and POSTROUTING.
+		
+		\item \textbf{Raw}: The raw table is primarily used for configuring exemptions from connection tracking. It allows packets to bypass connection tracking mechanisms.
+	\end{itemize}
+	
+	Each chain within a table is a list of rules that can match specific criteria for a packet. The rules define the conditions for a packet and specify an associated target, which determines the action to be taken if the packet matches the rule.
+	
+	Common targets in iptables include:
+	
+	\begin{itemize}
+		\item \textbf{Accept}: The packet is allowed to pass through.
+		\item \textbf{Drop}: The packet is silently discarded.
+		\item \textbf{Queue}: The packet is passed to userspace for further processing by a queue handler.
+		\item \textbf{Return}: Stops traversing the current chain and resumes at the next rule in the previous (calling) chain.
+		\item \textbf{User-defined chain}: A rule can specify the name of a user-defined chain, which allows for more complex rule organization and processing.
+	\end{itemize}
+	
+	By defining rules in the appropriate chains within the tables, administrators can control and filter network traffic based on various criteria, such as source/destination IP addresses, ports, protocols, and packet states.
+	
+	iptables provides granular control over network traffic, allowing administrators to enhance network security, implement firewall rules, and perform network address translation. It is a versatile tool widely used for network administration and security in Linux-based systems.}
+	
+	\subsection{Extended Modules in iptables}
+	
+	\configuratedText{\textbf{iptables}, as a packet filtering firewall tool, can utilize extended packet matching modules to provide additional flexibility and functionality in rule definition. These modules can be used implicitly by specifying the protocol (-p) or explicitly with the -m option followed by the name of the matching module.
+	
+	Once a matching module is specified, additional command-line options become available, depending on the specific module being used. One example of an extended module is the "-m state" module, which allows matching based on the state of the connection.
+	
+	The "-m state" module provides the ability to match packets based on their state, using the "--state" option followed by a state value. The state values can include:
+	
+	\begin{itemize}
+		\item \textbf{INVALID}: Matches packets that are not associated with a known connection or have invalid states.
+		\item \textbf{ESTABLISHED}: Matches packets that are associated with an established connection.
+		\item \textbf{NEW}: Matches packets that are part of a new connection.
+		\item \textbf{RELATED}: Matches packets that are related to an established connection.
+	\end{itemize}
+	
+	Using these extended modules and their associated options, iptables rules can be constructed to match specific packet attributes and apply corresponding actions. The basic structure of an iptables rule includes the following parameters:
+	
+	\begin{itemize}
+		\item \texttt{-A} (\texttt{--append}) \textit{chain}: Specifies the chain to which the rule will be appended.
+		\item \textit{rule-specification}: Defines the criteria for matching packets.
+		\item \texttt{-j} (\texttt{--jump}) \textit{target}: Specifies the action to be taken if a packet matches the rule.
+	\end{itemize}
+	
+	The parameters in the rule specification can include options such as \texttt{-p} (\texttt{--protocol}) to specify the protocol, \texttt{-s} (\texttt{--source}) to specify the source address, \texttt{-i} (\texttt{--in-interface}) to specify the network interface, and others.
+	
+	Here are a few examples of iptables rules:
+	
+	\begin{itemize}
+		\item Block all incoming traffic on the FORWARD chain for the eth0 interface:
+		\texttt{iptables -A FORWARD -i eth0 -j DROP}
+		
+		\item Accept packets from outside if they refer to a TCP connection initiated from within the network:
+		\texttt{iptables -A FORWARD -i eth0 -m state --state ESTABLISHED -j ACCEPT}
+	\end{itemize}
+	
+	In the examples above, the rules are applied to the FORWARD chain, specifying the eth0 network interface as the point of origin for the packets. The \texttt{-j} option specifies the action to be taken on the matching packets, such as dropping, accepting, or rejecting them.
+	
+	By constructing iptables rules using the available options and extended modules, network administrators can define granular packet filtering and control the flow of network traffic based on specific criteria.}
+	
+	\newpage
+	\subsection{Writing a rule in iptables}
+		\configuratedText{\textbf{Step 1: Determine the Purpose of the Rule}
+		\begin{itemize}
+			\item What network traffic do you want to allow or block?
+			\item Is it for incoming or outgoing traffic?
+			\item Which network interface is involved?
+			\item What criteria should be used to match the packets?
+		\end{itemize}
+		
+		\textbf{Step 2: Choose the Chain}
+		\begin{itemize}
+			\item \texttt{INPUT}: For filtering incoming packets destined for the local machine.
+			\item \texttt{OUTPUT}: For filtering outgoing packets generated by the local machine.
+			\item \texttt{FORWARD}: For filtering packets being routed through the machine (if it's acting as a router).
+		\end{itemize}
+		
+		\textbf{Step 3: Write the Rule Syntax}
+		\begin{itemize}
+			\item \texttt{iptables -A [CHAIN] [OPTIONS] -j [ACTION]}
+			\item \texttt{-A} appends the rule to the specified chain.
+			\item \texttt{[CHAIN]} is the chain name where the rule will be added.
+			\item \texttt{[OPTIONS]} are the criteria to match the packets. This can include source/destination IP addresses, ports, protocols, etc.
+			\item \texttt{-j [ACTION]} specifies the action to be taken if a packet matches the rule, such as ACCEPT, DROP, REJECT, etc.
+		\end{itemize}
+		
+		\textbf{Step 4: Specify Criteria}
+		\begin{itemize}
+			\item Based on the purpose of the rule, specify the criteria to match the packets.
+			\item \texttt{-s [SOURCE]} specifies the source IP address or IP range.
+			\item \texttt{-d [DESTINATION]} specifies the destination IP address or IP range.
+			\item \texttt{-p [PROTOCOL]} specifies the protocol (e.g., tcp, udp, icmp).
+			\item \texttt{--sport [SOURCE PORT]} specifies the source port.
+			\item \texttt{--dport [DESTINATION PORT]} specifies the destination port.
+			\item \texttt{-i [INPUT INTERFACE] specifies input interface }
+			\item \texttt{-o [OUTPUT INTERFACE] specifies output interface}
+			\item \texttt{--icmp-type [ICMP TYPE] ICMP message type}
+			\item \texttt{-m state --state [STATE] Connection state}
+		\end{itemize}
+	
+	
+		
+		\textbf{Step 5: Choose the Action}
+		\begin{itemize}
+			\item Decide on the action to be taken if a packet matches the rule.
+			\item \texttt{ACCEPT}: Allow the packet to pass through.
+			\item \texttt{DROP}: Silently discard the packet.
+			\item \texttt{REJECT}: Discard the packet and send an error response back to the sender.
+		\end{itemize}
+		
+		\textbf{Step 6: Write the Rule}
+		\begin{itemize}
+			\item Combine all the elements together to write the complete rule.
+			\item \texttt{iptables -A INPUT -s 192.168.1.100 -p tcp --dport 22 -j ACCEPT}
+			\item This rule allows incoming TCP traffic on port 22 (SSH) from the source IP address 192.168.1.100.
+		\end{itemize}
+		
+		\textbf{Step 7: Apply the Rule}
+		\begin{itemize}
+			\item Once you have written the rule, you can apply it using the iptables command.
+			\item However, make sure to consider the order of the rules, as they are evaluated from top to bottom.
+			\item You may need to adjust the rule placement or use specific positions (-I, -R) to insert or replace rules in specific positions.
+		\end{itemize}}
+
+	\newpage
+	\subsection{Examples}
+	\configuratedText{
+	\subsubsection{Example 1}
+			This rule allows the firewall to accept TCP packets for routing when they enter on the \textit{eth0} interface, originate from any IP address, and are destined for the IP address 192.168.1.58 reachable via the \textit{eth1} interface. The source port should be in the range of 1024 to 65535, and the destination port should be port 80 (www/http).
+			\begin{itemize}
+				\begin{sloppypar}
+				\item \texttt{iptables -A FORWARD -s 0/0 -i eth0 -d 192.168.1.58 -o eth1 -p tcp --sport 1024:65535 --dport 80 -j ACCEPT}\\
+				\end{sloppypar}
+			\end{itemize}
+	
+	\begin{itemize}
+		\item The rule is using the \texttt{iptables} command to append (-A) a rule to the FORWARD chain, which is responsible for packets being routed through the system.
+		
+		\item The explanation states that the rule allows the firewall to accept TCP packets for routing when they enter on the \textit{eth0} interface (\texttt{-i eth0}), originate from any IP address (\texttt{-s 0/0}), and are destined for the IP address 192.168.1.58 reachable via the \textit{eth1} interface (\texttt{-d 192.168.1.58 -o eth1}). This means that the rule is intended for packets that are passing through the firewall from one interface to another.
+		
+		\item The criteria for the source port is specified as being in the range of 1024 to 65535 (\texttt{--sport 1024:65535}), indicating that the source port can be any port above 1023 (since ports below 1024 are typically reserved for well-known services).
+		
+		\item The criteria for the destination port is specified as port 80 (\texttt{--dport 80}), which corresponds to the standard port used for HTTP (web) traffic.
+		
+		\item The action to be taken for the packets that match this rule is to accept them (\texttt{-j ACCEPT}), allowing them to proceed through the firewall for routing.
+		
+		\item Overall, this rule ensures that TCP packets entering on the \textit{eth0} interface, coming from any source IP address, and destined for the IP address 192.168.1.58 on the \textit{eth1} interface, with the source port in the specified range and destination port as port 80, will be accepted for routing purposes.
+	\end{itemize}
+
+	
+	\newpage		
+	\subsubsection{Example 2}
+			These rules allow the firewall to send ICMP echo-requests (pings) and accept the corresponding ICMP echo-replies.
+			\begin{itemize}
+				\item \texttt{iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT}
+				\item \texttt{iptables -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT}\\
+			\end{itemize}
+	
+	\configuratedText{The given example focuses on allowing the firewall to send ICMP echo-requests (pings) and accept the corresponding ICMP echo-replies.
+		
+		\texttt{iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT}
+		
+		This rule allows outgoing ICMP echo-request packets from the firewall. Let's break down the components:
+		
+		\begin{itemize}
+			\item \texttt{-A OUTPUT} appends the rule to the OUTPUT chain, which handles outgoing packets.
+			\item \texttt{-p icmp} specifies the protocol as ICMP.
+			\item \texttt{--icmp-type echo-request} specifies the ICMP type as echo-request, which corresponds to a ping request.
+			\item \texttt{-j ACCEPT} indicates that the action for matching packets is to accept them.
+		\end{itemize}
+		
+		In other words, the first rule allows the firewall to send ICMP echo-request packets.
+		
+		\texttt{iptables -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT}
+		
+		This rule allows incoming ICMP echo-reply packets to the firewall. Here's how it is broken down:
+		
+		\begin{itemize}
+			\item \texttt{-A INPUT} appends the rule to the INPUT chain, which handles incoming packets.
+			\item \texttt{-p icmp} specifies the protocol as ICMP.
+			\item \texttt{--icmp-type echo-reply} specifies the ICMP type as echo-reply, which corresponds to a ping reply.
+			\item \texttt{-j ACCEPT} indicates that the action for matching packets is to accept them.
+		\end{itemize}
+		
+		This rule enables the firewall to accept ICMP echo-reply packets.
+		
+		Together, these rules ensure that the firewall can send ICMP echo-requests (pings) and accept the corresponding ICMP echo-replies as responses to those requests. The rules allow bidirectional communication for ICMP ping requests and responses, facilitating network diagnostics and connectivity testing.}
+	
+	\newpage		
+	\subsubsection{Example 3}
+			This rule limits the acceptance of ICMP echo-requests (pings) to at most 1 ping per second on the \textit{eth0} interface.
+			\begin{itemize}
+				\begin{sloppypar}
+				\item \texttt{iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 1/s -i eth0 -j ACCEPT}
+				\end{sloppypar}
+			\end{itemize}
+				limiting the acceptance of TCP segments with the SYN bit set 
+				to no more than five per second
+		\begin{itemize}
+			\begin{sloppypar}
+				\item \texttt{iptables -A INPUT -p tcp --syn -m limit --limit 5/s -i eth0 -j ACCEPT}\\
+			\end{sloppypar}
+		\end{itemize}
+	
+	\configuratedText{This example demonstrates limiting the acceptance of certain types of packets based on rate limits.
+		
+		\texttt{iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 1/s -i eth0 -j ACCEPT}
+		
+		This rule limits the acceptance of ICMP echo-request packets (ping requests) to a rate of 1 packet per second. Let's break down the components:
+		
+		\begin{itemize}
+			\item \texttt{-A INPUT} appends the rule to the INPUT chain, which handles incoming packets.
+			\item \texttt{-p icmp} specifies the protocol as ICMP.
+			\item \texttt{--icmp-type echo-request} specifies the ICMP type as echo-request, which corresponds to a ping request.
+			\item \texttt{-m limit --limit 1/s} uses the limit module to set a rate limit of 1 packet per second.
+			\item \texttt{-i eth0} specifies that the rule applies to packets received on the eth0 interface.
+			\item \texttt{-j ACCEPT} indicates that the action for matching packets is to accept them.
+		\end{itemize}
+		
+		In other words, this rule allows the firewall to accept ICMP echo-request packets but limits their acceptance to a rate of 1 packet per second. This helps prevent potential ping flood attacks or excessive ICMP traffic.
+		
+		\texttt{iptables -A INPUT -p tcp --syn -m limit --limit 5/s -i eth0 -j ACCEPT}
+		
+		This rule limits the acceptance of TCP packets with the SYN flag set (indicating the start of a new connection) to a rate of 5 packets per second. Here's how it is broken down:
+		
+		\begin{itemize}
+			\item \texttt{-A INPUT} appends the rule to the INPUT chain, which handles incoming packets.
+			\item \texttt{-p tcp} specifies the protocol as TCP.
+			\item \texttt{--syn} matches packets with the SYN flag set, indicating the start of a new TCP connection.
+			\item \texttt{-m limit --limit 5/s} applies a rate limit of 5 packets per second using the limit module.
+			\item \texttt{-i eth0} specifies that the rule applies to packets received on the eth0 interface.
+			\item \texttt{-j ACCEPT} indicates that the action for matching packets is to accept them.
+		\end{itemize}
+		
+		This rule allows the firewall to accept TCP packets with the SYN flag set but limits their acceptance to a rate of 5 packets per second. It helps mitigate potential SYN flood attacks and controls the rate of incoming TCP connection requests.}
+	
+	\newpage		
+	\subsubsection{Example 4}
+	\configuratedText{These rules allow the firewall to accept TCP packets for routing when they enter on the \textit{eth0} interface, originate from any IP address, and are destined for the IP address 192.168.1.58 reachable via the \textit{eth1} interface. The source port should be in the range of 1024 to 65535, and the destination ports should be port 80 (www/http) and port 443 (https).\\
+	The return packets from 192.168.1.58 are also allowed. Instead of stating the source and destination ports, you can simply allow packets related to established connections using the \texttt{-m} state and \texttt{--state ESTABLISHED} options. 
+		\begin{itemize}
+				\begin{sloppypar}
+				\item \texttt{iptables -A FORWARD -s 0/0 -i eth0 -d 192.168.1.58 -o eth1 -p tcp --sport 1024:65535 -m multiport --dports 80,443 -j ACCEPT}
+				\end{sloppypar}
+				\begin{sloppypar}
+				\item \texttt{iptables -A FORWARD -d 0/0 -o eth0 -s 192.168.1.58 -i eth1 -p tcp -m state --state ESTABLISHED -j ACCEPT}\\
+				\end{sloppypar}
+		\end{itemize}}
+	
+	\configuratedText{The example rules can be written in LaTeX as follows:
+		
+		\textbf{Rule 1: Allowing TCP Packets for Routing}
+		
+		\begin{itemize}
+			\item \texttt{iptables -A FORWARD -s 0/0 -i eth0 -d 192.168.1.58 -o eth1 -p tcp --sport 1024:65535 -m multiport --dports 80,443 -j ACCEPT}
+		\end{itemize}
+		
+		This rule allows the firewall to accept TCP packets for routing. Let's break down the components:
+		
+		\begin{itemize}
+			\item \texttt{-A FORWARD} appends the rule to the FORWARD chain.
+			\item \texttt{-s 0/0} matches packets originating from any source IP address.
+			\item \texttt{-i eth0} specifies that the rule applies to packets entering on the eth0 interface.
+			\item \texttt{-d 192.168.1.58} matches packets destined for the IP address 192.168.1.58.
+			\item \texttt{-o eth1} specifies that the rule applies to packets leaving via the eth1 interface.
+			\item \texttt{-p tcp} specifies the protocol as TCP.
+			\item \texttt{--sport 1024:65535} matches packets with a source port in the range of 1024 to 65535.
+			\item \texttt{-m multiport --dports 80,443} matches packets with a destination port of either 80 or 443.
+			\item \texttt{-j ACCEPT} indicates that the action for matching packets is to accept them.
+		\end{itemize}
+		
+		This rule allows the firewall to accept TCP packets that originate from any source IP address, enter via the eth0 interface, and are destined for the IP address 192.168.1.58 on the eth1 interface. The source port should be in the range of 1024 to 65535, and the destination ports should be 80 (HTTP) and 443 (HTTPS).
+		
+		\textbf{Rule 2: Allowing ESTABLISHED TCP Packets}
+		
+		\begin{itemize}
+			\item \texttt{iptables -A FORWARD -d 0/0 -o eth0 -s 192.168.1.58 -i eth1 -p tcp -m state --state ESTABLISHED -j ACCEPT}
+		\end{itemize}
+		
+		This rule allows the firewall to accept TCP packets in the ESTABLISHED state. Here's the breakdown:
+		
+		\begin{itemize}
+			\item \texttt{-A FORWARD} appends the rule to the FORWARD chain.
+			\item \texttt{-d 0/0} matches packets destined for any IP address.
+			\item \texttt{-o eth0} specifies that the rule applies to packets leaving via the eth0 interface.
+			\item \texttt{-s 192.168.1.58} matches packets originating from the IP address 192.168.1.58.
+			\item \texttt{-i eth1} specifies that the rule applies to packets entering on the eth1 interface.
+			\item \texttt{-p tcp} specifies the protocol as TCP.
+			\item \texttt{-m state --state ESTABLISHED} matches packets in the ESTABLISHED state, which are part of existing TCP connections.
+			\item \texttt{-j ACCEPT} indicates that the action for matching packets is to accept them.
+		\end{itemize}
+		
+		This rule allows the firewall to accept TCP packets in the ESTABLISHED state, which are responses or related to previously initiated connections from the IP address 192.168.1.58.}
+			
+	\newpage		
+	\subsubsection{Example 5}
+	\configuratedText{These rules allow DNS (UDP port 53) access from and to the firewall.
+		\begin{itemize}
+				\item \texttt{iptables -A OUTPUT -p udp -o eth0 --dport 53 --sport 1024:65535 -j ACCEPT}
+				\item \texttt{iptables -A INPUT -p udp -i eth0 --sport 53 --dport 1024:65535 -j ACCEPT}\\
+		\end{itemize}}
+	
+	\configuratedText{\textbf{Rule 1: Allowing Outgoing DNS Traffic}
+		
+		The rule \texttt{iptables -A OUTPUT -p udp -o eth0 --dport 53 --sport 1024:65535 -j ACCEPT} is added to the OUTPUT chain using the \texttt{-A} option, which appends the rule to the chain.
+		
+		\begin{itemize}
+			\item \texttt{-p udp} specifies that the rule applies to UDP traffic.
+			\item \texttt{-o eth0} indicates that the rule applies to outgoing traffic on the \texttt{eth0} network interface.
+			\item \texttt{--dport 53} specifies that the destination port should be port 53, which is commonly used for DNS (Domain Name System) queries.
+			\item \texttt{--sport 1024:65535} sets the source port range from 1024 to 65535, allowing dynamic or ephemeral ports used for the response packets.
+			\item \texttt{-j ACCEPT} indicates that the matched packets should be accepted.
+		\end{itemize}
+		
+		In summary, this rule allows outgoing UDP packets on the \texttt{eth0} interface with a destination port of 53 (DNS) and a source port range of 1024 to 65535. It permits DNS queries originating from the system.
+		
+		\textbf{Rule 2: Allowing Incoming DNS Traffic}
+		
+		The rule \texttt{iptables -A INPUT -p udp -i eth0 --sport 53 --dport 1024:65535 -j ACCEPT} is added to the INPUT chain using the \texttt{-A} option, which appends the rule to the chain.
+		
+		\begin{itemize}
+			\item \texttt{-p udp} specifies that the rule applies to UDP traffic.
+			\item \texttt{-i eth0} indicates that the rule applies to incoming traffic on the \texttt{eth0} network interface.
+			\item \texttt{--sport 53} specifies that the source port should be port 53, which is commonly used for DNS response packets.
+			\item \texttt{--dport 1024:65535} sets the destination port range from 1024 to 65535, allowing dynamic or ephemeral ports used for the original DNS queries.
+			\item \texttt{-j ACCEPT} indicates that the matched packets should be accepted.
+		\end{itemize}
+		
+		In summary, this rule allows incoming UDP packets on the \texttt{eth0} interface with a source port of 53 (DNS responses) and a destination port range of 1024 to 65535. It permits the DNS response packets to be accepted by the system.}
+			
+	\newpage		
+	\subsubsection{Example 6}
+		\configuratedText{These rules allow HTTP (port 80) and SSH (port 22) access to the firewall.
+			\begin{itemize}
+				\item
+				\begin{sloppypar}
+					\texttt{iptables -A OUTPUT -o eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT}
+				\end{sloppypar}
+				\item
+				\begin{sloppypar}
+					\texttt{iptables -A INPUT -p tcp -i eth0 --dport 22 --sport 1024:65535 -m state --state NEW -j ACCEPT}
+				\end{sloppypar}
+				\item
+				\begin{sloppypar}
+					\texttt{iptables -A INPUT -p tcp -i eth0 --dport 80 --sport 1024:65535 -m state --state NEW -j ACCEPT}\\
+				\end{sloppypar}
+			\end{itemize}}
+		
+	\configuratedText{\textbf{Rule 1: Allowing Established and Related Outgoing Connections}
+		
+		The rule \texttt{iptables -A OUTPUT -o eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT} is added to the OUTPUT chain using the \texttt{-A} option, which appends the rule to the chain.
+		
+		\begin{itemize}
+			\item \texttt{-o eth0} specifies the outgoing network interface as eth0.
+			\item \texttt{-m state --state ESTABLISHED,RELATED} matches packets that are part of an established or related connection.
+			\item \texttt{-j ACCEPT} indicates that the matched packets should be accepted.
+		\end{itemize}
+		
+		This rule allows outgoing packets on the eth0 interface that are part of an established or related connection, such as response packets to outgoing requests.
+		
+		\textbf{Rule 2: Allowing Incoming SSH Connections}
+		
+		The rule \texttt{iptables -A INPUT -p tcp -i eth0 --dport 22 --sport 1024:65535 -m state --state NEW -j ACCEPT} is added to the INPUT chain using the \texttt{-A} option, which appends the rule to the chain.
+		
+		\begin{itemize}
+			\item \texttt{-p tcp} specifies that the rule applies to TCP traffic.
+			\item \texttt{-i eth0} indicates that the rule applies to incoming traffic on the eth0 network interface.
+			\item \texttt{--dport 22} specifies that the destination port should be port 22, which is commonly used for SSH (Secure Shell) connections.
+			\item \texttt{--sport 1024:65535} sets the source port range from 1024 to 65535, allowing dynamic or ephemeral ports used for the response packets.
+			\item \texttt{-m state --state NEW} matches packets that are part of a new connection.
+			\item \texttt{-j ACCEPT} indicates that the matched packets should be accepted.
+		\end{itemize}
+		
+		This rule allows incoming TCP packets on the eth0 interface with a destination port of 22 (SSH) and a source port range of 1024 to 65535, which are typically used for client-side connections. It permits new SSH connections initiated from external sources.
+		
+		\textbf{Rule 3: Allowing Incoming HTTP Connections}
+		
+		The rule \texttt{iptables -A INPUT -p tcp -i eth0 --dport 80 --sport 1024:65535 -m state --state NEW -j ACCEPT} is added to the INPUT chain using the \texttt{-A} option, which appends the rule to the chain.
+		
+		\begin{itemize}
+			\item \texttt{-p tcp} specifies that the rule applies to TCP traffic.
+			\item \texttt{-i eth0} indicates that the rule applies to incoming traffic on the eth0 network interface.
+			\item \texttt{--dport 80} specifies that the destination port should be port 80, which is commonly used for HTTP connections.
+			\item \texttt{--sport 1024:65535} sets the source port range from 1024 to 65535, allowing dynamic or ephemeral ports used for the response packets.
+			\item \texttt{-m state --state NEW} matches packets that are part of a new connection.
+			\item \texttt{-j ACCEPT} indicates that the matched packets should be accepted.
+		\end{itemize}
+		
+		This rule allows incoming TCP packets on the eth0 interface with a destination port of 80 (HTTP) and a source port range of 1024 to 65535, which are typically used for client-side connections. It permits new HTTP connections initiated from external sources.
+		
+		These rules are designed to allow specific incoming and outgoing connections on host H. The first rule ensures that established or related outgoing connections are accepted. The second and third rules allow incoming SSH (port 22) and HTTP (port 80) connections, respectively, permitting new connections from external sources.}
+			
+	\newpage		
+	\subsubsection{Example 7}
+			\configuratedText{These rules allow the firewall to access the Internet, allowing outbound HTTP (port 80) and HTTPS (port 443) traffic.
+			\begin{itemize}
+				\begin{sloppypar}
+				\item \texttt{iptables -A OUTPUT -j ACCEPT -m state --state NEW,ESTABLISHED,RELATED -o eth0 -p tcp -m multiport --dports 80,443 --sport 1024:65535}
+				\end{sloppypar}
+				\begin{sloppypar}
+				\item \texttt{iptables -A INPUT -j ACCEPT -m state --state ESTABLISHED,RELATED -i eth0 -p tcp}\\
+				\end{sloppypar}
+			\end{itemize}}
+	
+	\configuratedText{\textbf{Rule 1: Allowing Outgoing HTTP and HTTPS Connections}
+		
+		The rule \texttt{iptables -A OUTPUT -j ACCEPT -m state --state NEW,ESTABLISHED,RELATED -o eth0 -p tcp -m multiport --dports 80,443 --sport 1024:65535} is added to the OUTPUT chain using the \texttt{-A} option, which appends the rule to the chain.
+		
+		\begin{itemize}
+			\item \texttt{-j ACCEPT} indicates that the matched packets should be accepted.
+			\item \texttt{-m state --state NEW,ESTABLISHED,RELATED} matches packets that are either new, established, or related connections.
+			\item \texttt{-o eth0} specifies the outgoing network interface as eth0.
+			\item \texttt{-p tcp} specifies that the rule applies to TCP traffic.
+			\item \texttt{-m multiport --dports 80,443} matches packets with a destination port of either 80 (HTTP) or 443 (HTTPS).
+			\item \texttt{--sport 1024:65535} sets the source port range from 1024 to 65535, allowing dynamic or ephemeral ports used for the response packets.
+		\end{itemize}
+		
+		This rule allows outgoing TCP packets on the eth0 interface with a destination port of either 80 or 443. It permits new, established, or related connections for HTTP and HTTPS traffic. The source port range ensures that response packets can be received.
+		
+		\textbf{Rule 2: Allowing Incoming Established and Related TCP Connections}
+		
+		The rule \texttt{iptables -A INPUT -j ACCEPT -m state --state ESTABLISHED,RELATED -i eth0 -p tcp} is added to the INPUT chain using the \texttt{-A} option, which appends the rule to the chain.
+		
+		\begin{itemize}
+			\item \texttt{-j ACCEPT} indicates that the matched packets should be accepted.
+			\item \texttt{-m state --state ESTABLISHED,RELATED} matches packets that are either part of an established or related connection.
+			\item \texttt{-i eth0} specifies the incoming network interface as eth0.
+			\item \texttt{-p tcp} specifies that the rule applies to TCP traffic.
+		\end{itemize}
+		
+		This rule allows incoming TCP packets on the eth0 interface that are part of an established or related connection. It permits responses to outgoing connections and ensures that established connections can receive data.
+		
+		These rules effectively allow access to the Internet from the firewall (host H) and permit outbound connections on ports 80 (HTTP) and 443 (HTTPS). The first rule allows outgoing packets for new, established, or related connections to these ports, and the second rule accepts incoming packets that are part of established or related connections on the eth0 interface.}	
+	\newpage		
+	\subsubsection{Example 8}
+			\configuratedText{These rules allow the home network (192.168.1.0/24) to access the firewall.
+			\begin{itemize}
+				\item \texttt{iptables -A INPUT -j ACCEPT -p all -s 192.168.1.0/24 -i eth1}
+				\item \texttt{iptables -A OUTPUT -j ACCEPT -p all -d 192.168.1.0/24 -o eth1}\\
+			\end{itemize}}
+	
+	\configuratedText{\textbf{Rule 1: Allowing Incoming Traffic from the LAN Network}
+		
+		The rule \texttt{iptables -A INPUT -j ACCEPT -p all -s 192.168.1.0/24 -i eth1} is added to the INPUT chain using the \texttt{-A} option, which appends the rule to the chain.
+		
+		\begin{itemize}
+			\item \texttt{-j ACCEPT} indicates that the matched packets should be accepted.
+			\item \texttt{-p all} matches packets of any protocol.
+			\item \texttt{-s 192.168.1.0/24} specifies the source IP address or network as 192.168.1.0/24, representing the LAN network.
+			\item \texttt{-i eth1} specifies the incoming network interface as eth1.
+		\end{itemize}
+		
+		This rule allows incoming packets from the LAN network (192.168.1.0/24) on the eth1 interface, regardless of the protocol. It permits communication from the LAN to the firewall (host H).
+		
+		\textbf{Rule 2: Allowing Outgoing Traffic to the LAN Network}
+		
+		The rule \texttt{iptables -A OUTPUT -j ACCEPT -p all -d 192.168.1.0/24 -o eth1} is added to the OUTPUT chain using the \texttt{-A} option, which appends the rule to the chain.
+		
+		\begin{itemize}
+			\item \texttt{-j ACCEPT} indicates that the matched packets should be accepted.
+			\item \texttt{-p all} matches packets of any protocol.
+			\item \texttt{-d 192.168.1.0/24} specifies the destination IP address or network as 192.168.1.0/24, representing the LAN network.
+			\item \texttt{-o eth1} specifies the outgoing network interface as eth1.
+		\end{itemize}
+		
+		This rule allows outgoing packets to the LAN network (192.168.1.0/24) on the eth1 interface, regardless of the protocol. It permits communication from the firewall (host H) to the LAN network.}
+			
+	\newpage		
+	\subsubsection{Example 9}
+			\configuratedText{These rules allow loopback traffic, which enables communication between processes on the firewall itself.
+			\begin{itemize}
+				\item \texttt{iptables -A INPUT -i lo -j ACCEPT}
+				\item \texttt{iptables -A OUTPUT -o lo -j ACCEPT}
+			\end{itemize}}
+		
+	\configuratedText{\textbf{Rule 1: Allowing Incoming Traffic on the Loopback Interface}
+		
+		The rule \texttt{iptables -A INPUT -i lo -j ACCEPT} is added to the INPUT chain using the \texttt{-A} option, which appends the rule to the chain.
+		
+		\begin{itemize}
+			\item \texttt{-i lo} specifies the incoming network interface as lo, which represents the loopback interface.
+			\item \texttt{-j ACCEPT} indicates that the matched packets should be accepted.
+		\end{itemize}
+		
+		This rule allows incoming packets on the loopback interface, which is typically used for local communication within the same host. It permits internal communication between processes running on the host.
+		
+		\textbf{Rule 2: Allowing Outgoing Traffic on the Loopback Interface}
+		
+		The rule \texttt{iptables -A OUTPUT -o lo -j ACCEPT} is added to the OUTPUT chain using the \texttt{-A} option, which appends the rule to the chain.
+		
+		\begin{itemize}
+			\item \texttt{-o lo} specifies the outgoing network interface as lo, which represents the loopback interface.
+			\item \texttt{-j ACCEPT} indicates that the matched packets should be accepted.
+		\end{itemize}
+		
+		This rule allows outgoing packets on the loopback interface, enabling local communication from processes running on the host.
+		
+		These rules ensure that the loopback interface is accessible and permit local communication between processes running on the host. The INPUT rule allows incoming packets on the loopback interface, and the OUTPUT rule allows outgoing packets on the loopback interface.
+		
+		The loopback interface is essential for internal host operations, and these rules enable various services and processes to communicate with each other on the same host without going through the network stack.}
+	}
 
 	\newpage
 	\section{Email Security}
@@ -781,6 +1353,20 @@
 	    Strong collision resistance refers to the property of a hash function where it is computationally infeasible to find any two distinct inputs that produce the same hash value. Weak collision resistance, on the other hand, means that it is computationally difficult to find two specific inputs that result in the same hash value.
 	
 	The reason why strongly collision-resistant functions are also weakly collision-resistant is that if an attacker can find a specific pair of inputs that collide, they can demonstrate a general collision by applying additional modifications to those inputs. In other words, if there exists a pair of inputs A and B such that hash(A) = hash(B), an attacker can create a new pair of inputs A' and B' such that hash(A') = hash(B') by manipulating A and B based on the collision found.
+	
+	\item No, the traditional binary representation of integers is not a cryptographic hash function. The traditional binary representation of integers is a way of representing numbers in a base-2 numeral system, where each digit can be either 0 or 1. It is a fundamental concept in computer science and mathematics but does not possess the properties or characteristics of a cryptographic hash function.
+	
+	A cryptographic hash function, on the other hand, is a mathematical algorithm that takes an input (message or data) and produces a fixed-size output called a hash value or digest. Cryptographic hash functions are designed to have specific properties, including:
+	
+	\begin{enumerate}
+		\item Deterministic: For the same input, the hash function always produces the same hash value.
+		\item 	Pre-image resistance: It should be computationally infeasible to determine the original input from the hash value.
+		\item 	Collision resistance: It should be highly unlikely for two different inputs to produce the same hash value.
+		\item 	Diffusion: A small change in the input should result in a significantly different hash value.
+		\item 	Non-reversible: It should be computationally infeasible to determine the original input from the hash value without a pre-existing mapping.
+	\end{enumerate}
+	
+	The traditional binary representation of integers does not exhibit these properties.
 	\end{enumerate}}
 	
 	\subsubsection{Ex 2. Key exchange}	
@@ -906,7 +1492,58 @@
 	\end{enumerate}}
 
 	\paragraph{Solution:}
-	\todo{Firewall}
+	\configuratedText{
+		\begin{enumerate}
+		\item When iptables is used as a personal firewall on a standalone system, the need to configure rules in the routing chain (i.e., FORWARD chain) depends on the specific network setup and requirements.
+		
+		In a typical personal firewall setup, where the system is not functioning as a router, the main focus is on incoming and outgoing traffic, which is handled by the INPUT and OUTPUT chains, respectively. The FORWARD chain, which deals with packets being routed through the system, is usually not a concern in this scenario.
+		
+		However, there might be cases where the personal firewall setup involves routing functionality, such as when the system is acting as a router or a gateway between multiple networks. In such cases, the FORWARD chain needs to be configured with appropriate rules to handle packets being forwarded through the system.
+		
+		\item To allow only SSH connections from the LAN host 192.168.1.2 to the firewall host H (192.168.1.254) and prohibit all other network connections, you can use the following iptables rules:
+		
+		\texttt{iptables -A INPUT -s 192.168.1.2/24 -p tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT}
+		
+		\texttt{iptables -A OUTPUT -d 192.168.1.2/24 -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT}\\
+		
+		\texttt{iptables -A INPUT -j DROP}
+		
+		\texttt{iptables -A OUTPUT -j DROP}\\
+		
+		
+		\textbf{More details}:\\
+		\texttt{iptables -A INPUT -s 192.168.1.2/24 -p tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT}
+		
+		This rule allows incoming TCP packets from the LAN host 192.168.1.2 on port 22 (SSH). Let's break down the components:
+		
+		\begin{itemize}
+			\item \texttt{-A INPUT} appends the rule to the INPUT chain, which handles incoming packets.
+			\item \texttt{-s 192.168.1.2/24} specifies the source IP range as 192.168.1.2 to allow SSH connections from the LAN host.
+			\item \texttt{-p tcp --dport 22} specifies the protocol as TCP and destination port as 22 (SSH).
+			\item \texttt{-m state --state NEW,ESTABLISHED} matches packets in the NEW and ESTABLISHED states to allow the initial SSH connection and subsequent communication.
+			\item \texttt{-j ACCEPT} indicates that the action for matching packets is to accept them.
+		\end{itemize}
+		
+		\texttt{iptables -A OUTPUT -d 192.168.1.2/24 -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT}
+		
+		This rule allows outgoing TCP packets to the LAN host 192.168.1.2 on port 22 (SSH). Here's how it is broken down:
+		
+		\begin{itemize}
+			\item \texttt{-A OUTPUT} appends the rule to the OUTPUT chain, which handles outgoing packets.
+			\item \texttt{-d 192.168.1.2/24} specifies the destination IP range as 192.168.1.2 to allow SSH connections to the LAN host.
+			\item \texttt{-p tcp --sport 22} specifies the protocol as TCP and source port as 22 (SSH).
+			\item \texttt{-m state --state ESTABLISHED} matches packets in the ESTABLISHED state to allow the response packets of the SSH connection.
+			\item \texttt{-j ACCEPT} indicates that the action for matching packets is to accept them.
+		\end{itemize}
+		
+		\texttt{iptables -A INPUT -j DROP}
+		
+		This rule drops all other incoming packets that do not match the previous rules, effectively prohibiting any additional network connections to the firewall host.
+		
+		\texttt{iptables -A OUTPUT -j DROP}
+		
+		This rule drops all outgoing packets that do not match the previous rules, effectively prohibiting any other network connections from the firewall host.
+	\end{enumerate}}
 	
 	\newpage
 	\subsection{3 February 2023}	
@@ -968,6 +1605,74 @@
 	\end{enumerate}}
 
 	\paragraph{Solution:}
+	\configuratedText{\begin{enumerate}
+	\item \textbf{Blacklisting:}
+	
+	\begin{itemize}
+		\item Focuses on identifying and blocking known threats.
+		\item Blocks traffic based on a list of known malicious entities or actions.
+		\item Rules are created in iptables to drop or reject traffic that matches the blacklist.
+		\item Requires continuous monitoring and updating of the blacklist.
+		\item Reactive approach, may not be effective against unknown threats or zero-day vulnerabilities.
+		\item Can result in a large number of rules and complex rule management.
+	\end{itemize}
+	
+	\textbf{Whitelisting:}
+	
+	\begin{itemize}
+		\item Focuses on explicitly allowing trusted entities or actions.
+		\item Allows traffic that matches a list of approved entities or actions.
+		\item Rules are created in iptables to explicitly allow traffic from trusted sources.
+		\item Proactive approach, minimizes the attack surface and reduces unauthorized access.
+		\item Requires careful planning and ongoing management to avoid blocking legitimate traffic.
+		\item Can result in a smaller number of rules, simplifying rule management.
+	\end{itemize}
+	
+	\textbf{Impact on iptables:}
+	
+	\begin{itemize}
+		\item Blacklisting involves creating rules to drop or reject traffic, potentially leading to a larger number of rules and performance impact.
+		\item Whitelisting involves creating rules to explicitly allow traffic, requiring careful planning and ongoing management.
+		\item Both policies can be implemented in iptables, and the choice depends on security requirements and level of control needed.
+	\end{itemize}
+
+	\item \textbf{Rule 1: Set Default Policies to DROP}
+	\begin{itemize}
+		\item \texttt{iptables -P INPUT DROP}: Sets the default policy for the INPUT chain to DROP, meaning that any incoming packets that do not match a specific rule will be dropped.
+		\item \texttt{iptables -P OUTPUT DROP}: Sets the default policy for the OUTPUT chain to DROP, so any outgoing packets that do not match a specific rule will be dropped.
+		\item \texttt{iptables -P FORWARD DROP}: Sets the default policy for the FORWARD chain to DROP, ensuring that any packets being forwarded through the firewall will be dropped unless there is a specific rule allowing them.
+	\end{itemize}
+	
+	\textbf{Rule 2: Allow Local Console Access}
+	\begin{itemize}
+		\item \texttt{iptables -A INPUT -i lo -j ACCEPT}: Allows incoming packets on the loopback interface (lo), which is used for local communication. This rule ensures that local console access is permitted.
+		\item \texttt{iptables -A OUTPUT -o lo -j ACCEPT}: Allows outgoing packets on the loopback interface (lo), ensuring that local console access can communicate with other local processes.
+	\end{itemize}
+
+	\item \textbf{Rule 1: Set Default Policies}
+	\begin{itemize}
+		\item \texttt{iptables -P INPUT DROP}: Sets the default policy for the INPUT chain to DROP, meaning that any incoming packets that do not match a specific rule will be dropped.
+		\item \texttt{iptables -P FORWARD DROP}: Sets the default policy for the FORWARD chain to DROP, ensuring that any packets being forwarded through the firewall will be dropped unless there is a specific rule allowing them.
+		\item \texttt{iptables -P OUTPUT ACCEPT}: Sets the default policy for the OUTPUT chain to ACCEPT, allowing outgoing packets by default.
+	\end{itemize}
+	
+	\textbf{Rule 2: Allow Loopback Interface}
+	\begin{itemize}
+		\item \texttt{iptables -A INPUT -i lo -j ACCEPT}: Allows incoming packets on the loopback interface (lo), which is used for local communication.
+	\end{itemize}
+	
+	\textbf{Rule 3: Allow Established and Related Connections on eth0}
+	\begin{itemize}
+		\item \texttt{iptables -A INPUT -i eth0 -m state --state ESTABLISHED,RELATED -j ACCEPT}: Allows incoming packets on the eth0 interface that are part of established or related connections. This rule ensures that responses to outgoing connections or related traffic are accepted.
+	\end{itemize}
+	
+	\textbf{Rule 4: Allow Established and Related Connections on Forwarding}
+	\begin{itemize}
+		\item \texttt{iptables -A FORWARD -i eth0 -o eth1 -m state --state ESTABLISHED,RELATED -j ACCEPT}: Allows forwarding of packets from the eth0 interface to the eth1 interface if they are part of established or related connections. This rule ensures that packets belonging to established connections can be forwarded.
+	\end{itemize}
+	
+	By implementing these rules, the firewall will drop incoming packets by default, except for those on the loopback interface and established/related connections on the eth0 interface. The forwarding of packets from eth0 to eth1 will also be allowed if they are part of established or related connections.
+	\end{enumerate}}
 
 	\newpage
 	\subsection{6 April 2023}
@@ -1033,6 +1738,9 @@
 	\end{enumerate}}
 	
 	\paragraph{Solution:}
+	\configuratedText{\begin{enumerate}
+		\item 
+	\end{enumerate}}
 	
 	\subsubsection{Ex 2. Man in the middle}	
 	\configuratedText{\begin{enumerate}
@@ -1041,7 +1749,10 @@
 	\end{enumerate}}
 	
 	\paragraph{Solution:}
-	
+	\configuratedText{\begin{enumerate}
+		\item 
+	\end{enumerate}}
+
 	\subsubsection{Ex 3. Hashing}	
 	\configuratedText{\begin{enumerate}
 	\item Define the properties that qualify a hashing function as cryptographic (the more formal, the better).
@@ -1384,6 +2095,88 @@
 
 	\paragraph{Solution:}
 	
+	\subsubsection{Ex 6.}	
+	\configuratedText{
+		\begin{enumerate}
+			\item 
+			\item
+			\item 
+	\end{enumerate}}
+	
+	\paragraph{Solution:}
+	
+	\subsubsection{Ex 7.}	
+	\configuratedText{
+		\begin{enumerate}
+			\item 
+			\item
+			\item 
+	\end{enumerate}}
+	
+	\paragraph{Solution:}
+	
+	\subsubsection{Ex 8.}	
+	\configuratedText{
+		\begin{enumerate}
+			\item What is the difference between a personal firewall and a perimeter firewall? 
+			\item ou are a home user with a strong Internet connection, however the modem/router - offering only
+			wired connection - is not providing any firewall/NAT. Carefully check the figure. Default iptables policy is ALLOW and you are asked to block all connections to the pc running
+			iptables (and vice versa) except those initiated inside the LAN. Write the corresponding iptables
+			rules.
+			
+			\sectionCenteredfigure{{"resources/images/Chapter 15/Sep2022Ex8Figure"}}{Figure}{sep2022ex8figure}
+	\end{enumerate}}
+	
+	\paragraph{Solution:}
+		\configuratedText{
+		\begin{enumerate}
+			\item A personal firewall is a type of firewall that is installed on an individual device, such as a computer or a smartphone. Its primary purpose is to protect the specific device from unauthorized access and malicious activities. It monitors and controls network traffic to and from the device, blocking or allowing connections based on predefined rules. Personal firewalls are typically configured by the device owner and are focused on protecting the individual device.
+			
+			On the other hand, a perimeter firewall, also known as a network firewall, is deployed at the network perimeter to protect an entire network or an organization's infrastructure. It acts as the first line of defense and filters incoming and outgoing traffic between the internal network and the external internet. Perimeter firewalls are responsible for enforcing security policies, blocking unauthorized access attempts, and mitigating various types of network-based threats. They are usually managed by network administrators and provide security for an entire network rather than individual devices.
+			
+			\item \textbf{Setting the Default Policy to Drop for All Chains}
+			
+			To set the default policy to drop for all chains, the following commands can be used:
+			
+			\begin{sloppypar}
+				\begin{itemize}
+					\item \texttt{iptables -P INPUT DROP}
+					\item \texttt{iptables -P OUTPUT DROP}
+					\item \texttt{iptables -P FORWARD DROP}
+				\end{itemize}
+			\end{sloppypar}
+			
+			These rules set the default policy to \texttt{DROP} for the \texttt{INPUT}, \texttt{OUTPUT}, and \texttt{FORWARD} chains, ensuring that any packets that do not match specific rules will be dropped.
+			
+			\textbf{Allowing Traffic Initiated from the Internal LAN}
+			
+			To allow traffic initiated from the internal LAN, the following commands can be used:
+			
+			\begin{sloppypar}
+				\begin{itemize}
+					\item \texttt{iptables -A INPUT -i eth1 -s 192.0.1.0/26 -j ACCEPT}
+					\item \texttt{iptables -A OUTPUT -o eth1 -d 192.0.1.0/26 -j ACCEPT}
+				\end{itemize}
+			\end{sloppypar}
+			
+			These rules allow incoming and outgoing traffic on the \texttt{eth1} interface (connected to the LAN) with the source or destination IP addresses within the LAN network (192.0.1.0/26).
+			
+			\textbf{Allowing Loopback (Localhost) Traffic}
+			
+			To allow loopback (localhost) traffic, the following commands can be used:
+			
+			\begin{sloppypar}
+				\begin{itemize}
+					\item \texttt{iptables -A INPUT -i lo -j ACCEPT}
+					\item \texttt{iptables -A OUTPUT -o lo -j ACCEPT}
+				\end{itemize}
+			\end{sloppypar}
+			
+			These rules allow incoming and outgoing traffic on the loopback interface (localhost), enabling local communication within the PC itself.
+			
+			These rules effectively block all incoming and outgoing connections to the PC running iptables, except for the traffic initiated from within the LAN and the local loopback traffic. It provides a basic level of security by allowing only internal LAN communication and local host communication while blocking any external connections.
+	\end{enumerate}}
+
 	\newpage
 	\subsection{25 October 2022}	
 
@@ -1417,24 +2210,156 @@
 
 	\paragraph{Solution:}
 		
-	\subsubsection{Ex 4.}	
+	\subsubsection{Ex 4.  Symmetric encryption}	
 	\configuratedText{
 	\begin{enumerate}
-	\item 
-	\item
-	\item 
+	\item What is a perfect cipher? Give the mathematical definition.
+	\item Under what conditions is OTP perfect? 
+	\item Why is it dangerous reusing the same keystream in OTP?
+	\item Carefully describe the Meet-in-the-Middle attack. 
+	\item What is "key whitening"? Why and how is it made?
 	\end{enumerate}}
 
 	\paragraph{Solution:}
+	\configuratedText{
+	\begin{enumerate}
+		\item A perfect cipher, also known as an unconditionally secure cipher, is a theoretical concept in cryptography. It refers to a cipher that provides \textbf{perfect secrecy}, meaning that the \textit{ciphertext} does not reveal any information about the \textit{plaintext}, regardless of the computational resources available to an adversary.
 		
-	\subsubsection{Ex 5.}	
+		\textit{Mathematical Definition}
+		
+		The mathematical definition of a perfect cipher can be stated as follows:
+		
+		\begin{itemize}
+			\item Let \(P\) be the set of all possible plaintexts,
+			\(C\) be the set of all possible ciphertexts,
+			\(K\) be the set of all possible keys,
+			and \(E_k\) be the encryption function with key \(k \in K\).
+			\item A cipher \((E, D)\) is considered a perfect cipher if and only if for every plaintext \(p \in P\) and ciphertext \(c \in C\), and for all distributions of \(p\) and \(c\), the following conditions hold:
+			\begin{enumerate}
+				\item For every \(p \in P\) and \(k \in K\), the probability of encrypting \(p\) to obtain \(c\) using key \(k\) is equal to the probability of obtaining \(c\) from any other plaintext \(p'\) using the same key \(k\).
+				\[\Pr[E_k(p) = c] = \Pr[E_k(p') = c]\]
+				\item For every \(c \in C\) and \(k \in K\), the probability of obtaining \(c\) from any plaintext \(p\) using key \(k\) is equal to the probability of obtaining \(c\) from any other plaintext \(p'\) using the same key \(k\).
+				\[\Pr[D_k(c) = p] = \Pr[D_k(c) = p']\]
+			\end{enumerate}
+		\end{itemize}
+		
+		In simpler terms, a perfect cipher ensures that the probability of obtaining a specific ciphertext from a given plaintext and key is the same as the probability of obtaining that ciphertext from any other plaintext using the same key. Similarly, the probability of obtaining a specific plaintext from a given ciphertext and key is the same as the probability of obtaining that plaintext from any other ciphertext using the same key.
+		
+		\item \begin{itemize}
+			\item \textbf{Key Length}: The key used in OTP must be at least as long as the plaintext and should be truly random. Each key bit should be independent of other key bits and have an equal probability of being 0 or 1.
+			
+			\item \textbf{Key Reuse}: Each key in OTP should be used only once and never repeated. Reusing a key or using a key more than once compromises the security of OTP and can lead to encryption vulnerabilities.
+			
+			\item \textbf{Key Distribution}: The key must be securely distributed to both the sender and the recipient of the encrypted message. The key should be shared through a secure channel to prevent interception or tampering.
+			
+			\item \textbf{Key Secrecy}: The key used in OTP must be kept completely secret from any unauthorized parties. If the key is compromised or known by an adversary, the security of OTP is compromised.
+			
+			\item \textbf{Encryption Process}: The encryption process in OTP involves performing a bitwise exclusive OR (XOR) operation between the plaintext and the corresponding key bits. The resulting ciphertext is a combination of the key and plaintext, making it impossible for an adversary to extract any meaningful information without knowing the exact key.
+		\end{itemize}
+	
+		\item \begin{itemize}
+			\item \textbf{Information Leakage}: Interception of multiple ciphertexts allows attackers to exploit the relationship between them. XORing corresponding ciphertexts can reveal patterns and potentially recover the original plaintexts.
+			
+			\item \textbf{Statistical Analysis}: Reusing the keystream enables attackers to perform statistical analysis. Patterns in the plaintext can manifest as patterns in the ciphertext, weakening the encryption's security.
+			
+			\item \textbf{Vulnerability to Known Plaintext Attacks}: If the attacker knows or can guess the plaintext of one message encrypted with a particular keystream, reusing that keystream for another message can lead to the recovery of the second plaintext.
+			
+			\item \textbf{Loss of Perfect Secrecy}: Reusing the keystream violates perfect secrecy, which is achieved when each key is used only once. The introduction of patterns and relationships makes it possible to gain information about the plaintext, compromising its security.
+		\end{itemize}
+	
+		\item The \textbf{Meet-in-the-Middle} attack is a cryptographic attack that takes advantage of the limited key space of a double encryption scheme. It is a technique used to reduce the complexity of exhaustive key search attacks in certain scenarios.
+		
+		In a double encryption scheme, a plaintext is encrypted twice using two different encryption algorithms with different keys. The \textbf{Meet-in-the-Middle} attack exploits the fact that performing both encryptions in reverse order allows us to find the matching key pair more efficiently than exhaustive search.
+		
+		Here's a brief description of the \textbf{Meet-in-the-Middle} attack:
+		
+		\begin{enumerate}
+			\item Assume we have a double encryption scheme where the plaintext is encrypted with \textit{Key A} and then with \textit{Key B}: ciphertext = E(Key B, E(Key A, plaintext)).
+			
+			\item The attacker generates a table, known as the \textbf{Meet-in-the-Middle} table, by encrypting all possible values of the first encryption using different keys: intermediate = E(Key A, plaintext) for all possible Key A values.
+			
+			\item The attacker also computes all possible values of the second encryption using different keys: candidate = E(Key B, ciphertext) for all possible Key B values.
+			
+			\item By comparing the values in the \textbf{Meet-in-the-Middle} table with the computed candidates, the attacker looks for a match. If a match is found, it indicates that the combination of \textit{Key A} and \textit{Key B} is the correct key pair.
+			
+			\item The attacker has now discovered the correct key pair without having to exhaustively search the entire key space.
+		\end{enumerate}
+		
+		This attack demonstrates a clever method to reduce the computational effort required to find the correct key pair in a double encryption scheme, making it a valuable technique for cryptanalysis in certain scenarios. 
+		
+		\item Key whitening is a technique that enhances the security of cryptographic algorithms by combining the original key with a whitening key to increase complexity and randomness in the resulting key. It adds an extra layer of mixing or diffusion, making it harder for attackers to exploit patterns or vulnerabilities.
+	\end{enumerate}}
+	
+	\subsubsection{Ex 5. Firewalls}	
 	\configuratedText{
 	\begin{enumerate}
-	\item 
-	\item
-	\item 
+	\item Can a packet filtering firewall detect malware? Discuss.
+	\item Provide the iptables rules for the following scenario:
+	\begin{enumerate}
+	\item Default policy is allow for all chains
+	\item Packets are delivered to the LAN through the ethernet adapter eth0
+	\item TCP segments are delivered to the LAN with a maximum speed of 3 per second (other segments will be dropped)
+	\end{enumerate}
 	\end{enumerate}}
 
 	\paragraph{Solution:}
+	\configuratedText{
+	\begin{enumerate}
+			\item A packet filtering firewall alone typically cannot detect malware in the traditional sense. Packet filtering firewalls primarily focus on filtering network traffic based on predetermined rules, such as IP addresses, ports, and protocols. Their main purpose is to control and monitor the flow of network traffic to enforce security policies.
+			
+			While packet filtering firewalls can help prevent unauthorized access to a network and mitigate certain types of network-based attacks, they do not have the ability to inspect the content of the packets or analyze their payload for malware detection. They primarily operate at the network layer (Layer 3) and transport layer (Layer 4) of the network stack, where they make decisions based on IP addresses, ports, and protocols.
+			\item you can use the following rules:
+			\begin{enumerate}
+				\item \textbf{Setting Default Policies to Allow All Chains}
+				
+				To set the default policy to allow for all chains, the following commands can be used:
+				
+				\begin{itemize}
+					\item \texttt{iptables -P INPUT ACCEPT}
+					\item \texttt{iptables -P FORWARD ACCEPT}
+					\item \texttt{iptables -P OUTPUT ACCEPT}
+				\end{itemize}
+				
+				These commands set the default policy to ACCEPT for the INPUT, FORWARD, and OUTPUT chains, allowing all traffic by default.
+				\item \textbf{Configuring Rules for Inbound Traffic on the eth0 Interface}
+				
+				To configure rules for inbound traffic on the eth0 interface, the following commands can be used:
+				
+				\begin{sloppypar}
+					\begin{itemize}
+						\item \texttt{iptables -A INPUT -i eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT}
+						\item \texttt{iptables -A INPUT -i eth0 -p tcp --syn -m limit --limit 3/second -j ACCEPT}
+						\item \texttt{iptables -A INPUT -i eth0 -j DROP}
+					\end{itemize}
+				\end{sloppypar}
+				
+				These commands specify the following rules:
+				
+				\begin{itemize}
+					\item The first rule allows incoming traffic on the eth0 interface that is related to an established connection.
+					\item The second rule allows incoming TCP packets with the SYN flag set (indicating the start of a new connection) at a maximum rate of 3 per second.
+					\item The third rule drops any remaining incoming packets on the eth0 interface.
+				\end{itemize}
+				
+				These rules help control and filter inbound traffic on the eth0 interface by accepting established connections and limiting the rate of new TCP connections while dropping other packets.
+				\item \textbf{Configuring Rules for Outbound Traffic on the eth0 Interface (if needed)}
+				
+				If needed, rules can be configured for outbound traffic on the eth0 interface using the following commands:
+			\begin{sloppypar}	
+			\begin{itemize}
+				\item \texttt{iptables -A OUTPUT -o eth0 -m state --state RELATED,ESTABLISHED -j ACCEPT}
+				\item \texttt{iptables -A OUTPUT -o eth0 -j DROP}
+			\end{itemize}
+			\end{sloppypar}	
+				These commands specify the following rules:
+				
+				\begin{itemize}
+					\item The first rule allows outgoing traffic on the eth0 interface that is related to an established connection.
+					\item The second rule drops any other outgoing packets on the eth0 interface.
+				\end{itemize}
+				
+				These rules help control and filter outbound traffic on the eth0 interface by accepting established connections and dropping other packets if needed.
+			\end{enumerate}
+	\end{enumerate}}
 		
 \end{document}
